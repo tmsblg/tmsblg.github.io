@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Soulbound</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="Lock in 5 gut answers about WoW: Forever, send one link, and see which guildie can crack your mind. Shared rare words crit.">
+<meta name="description" content="Answer 8 quick questions about WoW: Forever, send one link, and see which guildie can crack your mind. Close guesses score, rare words crit.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#110e19">
@@ -13,9 +13,9 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Soulbound">
 <meta property="og:title" content="Can your guild read your mind?">
-<meta property="og:description" content="Lock in 5 gut answers about WoW: Forever. Send one link. Friends try to write what you wrote, and shared rare words crit.">
+<meta property="og:description" content="Answer 8 quick questions about WoW: Forever. Send one link. Friends guess what you said: close guesses score, rare words crit.">
 <meta property="og:url" content="https://tamasbalog.com/soulbound/">
-<meta property="og:image" content="https://tamasbalog.com/soulbound/og.png">
+<meta property="og:image" content="https://tamasbalog.com/soulbound/og.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Soulbound: a bond card and a combat log crit">
@@ -405,6 +405,67 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* v4: typed answers */
+.rule { font-size: var(--fs-small); color: var(--muted); }
+.rule b { color: var(--gold-hi); font-weight: 700; }
+.numrow { display: flex; align-items: center; gap: 0.6rem; }
+.numrow input[type="text"] { flex: 0 1 9rem; min-width: 0; font-size: 1.4rem; font-variant-numeric: tabular-nums; text-align: center; }
+.numrow .unit { color: var(--muted); font-weight: 700; }
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.45rem; }
+.scale button, .yn button, .opts button, .chips button {
+  appearance: none; border: 1px solid var(--line); background: var(--ink-3); color: var(--text);
+  border-radius: 9px; cursor: pointer; font: 700 1.1rem/1.2 var(--font-body);
+  transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
+}
+.scale button { min-height: 3.4rem; font: 400 1.6rem/1 var(--font-display); }
+.scale button:hover:not(:disabled), .yn button:hover:not(:disabled), .opts button:hover:not(:disabled), .chips button:hover:not(:disabled) { border-color: var(--gold); }
+.scale button[aria-pressed="true"], .yn button[aria-pressed="true"], .opts button[aria-pressed="true"], .chips button[aria-pressed="true"] {
+  background: var(--gold); border-color: var(--gold-hi); color: var(--on-gold);
+}
+.scale-ends { display: flex; justify-content: space-between; gap: 1rem; font-size: var(--fs-small); color: var(--muted); }
+.scale-ends span:last-child { text-align: right; }
+.yn { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.yn button { min-height: 3.4rem; font: 400 1.5rem/1 var(--font-display); }
+.opts { display: grid; gap: 0.5rem; }
+.opts button { min-height: 3.1rem; padding: 0.6rem 0.9rem; text-align: left; font: 400 1.15rem/1.25 var(--font-display); }
+.chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+.chips button { min-height: 2.9rem; padding: 0.5rem 0.7rem; font-size: 1rem; }
+.opts button.wrong, .chips button.wrong { border-color: var(--miss); color: var(--muted); text-decoration: line-through; text-decoration-color: var(--miss); }
+.opts button.right, .chips button.right { border-color: var(--equip); box-shadow: inset 0 0 0 1px var(--equip); }
+.opts button:disabled, .chips button:disabled, .scale button:disabled, .yn button:disabled { cursor: default; }
+.tries { display: inline-flex; gap: 0.35rem; align-items: center; }
+.tries i { width: 0.6rem; height: 0.6rem; transform: rotate(45deg); border: 1.5px solid var(--line); display: inline-block; }
+.tries i.used { background: var(--gold); border-color: var(--gold); }
+
+/* v4: reveals */
+.result { display: grid; gap: 0.75rem; padding-top: 0.25rem; border-top: 1px solid var(--line-soft); }
+.vs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.vs > div { padding: 0.7rem 0.8rem; border-radius: 10px; background: var(--tt-bg); border: 1px solid var(--line-soft); display: grid; gap: 0.2rem; min-width: 0; }
+.vs .label { font-size: 0.7rem; }
+.vs .val { font: 400 1.3rem/1.2 var(--font-display); overflow-wrap: anywhere; }
+.vs .theirs .val { color: var(--gold-hi); }
+.meter { height: 0.55rem; border-radius: 999px; background: var(--ink-3); overflow: hidden; }
+.meter i { display: block; height: 100%; width: var(--w); background: var(--mc, var(--equip)); border-radius: inherit; transition: width 0.5s ease-out; }
+.track5 { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.35rem; }
+.track5 span {
+  display: grid; place-items: center; min-height: 2.4rem; border-radius: 8px; border: 1px solid var(--line-soft);
+  background: var(--tt-bg); color: var(--muted); font: 400 1.2rem/1 var(--font-display); position: relative;
+}
+.track5 span.theirs { border-color: var(--gold-hi); color: var(--gold-hi); }
+.track5 span.yours { box-shadow: inset 0 0 0 2px var(--dmg-arcane); color: var(--text); }
+.track5 span.theirs.yours { background: color-mix(in srgb, var(--gold) 22%, var(--tt-bg)); }
+.legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 3px; margin-right: 0.35rem; vertical-align: -0.05em; }
+.verdict { font-weight: 800; }
+.verdict.good { color: var(--equip); }
+.verdict.mid { color: var(--gold-hi); }
+.verdict.bad { color: var(--miss); }
+.w.late { opacity: 0.85; text-decoration: underline dotted; text-underline-offset: 4px; }
+.alist .typed { font-size: 0.95rem; overflow-wrap: anywhere; }
+.alist .typed b { color: var(--gold-hi); font-weight: 700; }
+#rvBody { display: grid; gap: 0.6rem; }
+#rvBody .scale-ends { margin-top: -0.3rem; }
 </style>
 </head>
 <body>
@@ -420,13 +481,13 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       <div class="hero">
         <p class="eyebrow">WoW: Forever · <span id="homeDay">Soulbound #1</span></p>
         <h1 class="logo" id="homeTitle">Soulbound</h1>
-        <p class="lede">Lock in 5 gut answers. Send one link. See who can crack your mind.</p>
+        <p class="lede">Answer 8 quick questions. Send one link. See who can crack your mind.</p>
       </div>
       <p class="daybar"><span>Today’s set: <b id="homeSetLabel">#1</b></span><span>New set in <b id="homeReset">–</b></span></p>
 
       <div id="homeStart" class="stack">
-        <button class="btn primary block" id="lockBtn" type="button">Lock in today’s 5</button>
-        <p class="hint">5 prompts · 30 seconds each · one short sentence</p>
+        <button class="btn primary block" id="lockBtn" type="button">Lock in today’s 8</button>
+        <p class="hint">Written answers, numbers, scales and a yes-or-no · about 2 minutes</p>
       </div>
       <div id="homeLocked" class="mine" hidden>
         <div>
@@ -453,61 +514,58 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       <section class="stack" aria-labelledby="howTitle">
         <h2 class="h3" id="howTitle">How it works</h2>
         <ol class="steps">
-          <li><span><b>Lock in.</b> Five prompts about Forever, 30 seconds each. Write your first thought.</span></li>
-          <li><span><b>Send your link.</b> Your guild tries to write what you wrote.</span></li>
-          <li><span><b>Shared rare words crit.</b> Anyone can guess “queue”. Only your duo guesses “Bergham”.</span></li>
+          <li><span><b>Lock in.</b> Eight questions about Forever and your guild: a few written answers, two numbers, two scales and a yes-or-no.</span></li>
+          <li><span><b>Send your link.</b> Your guild guesses what you answered.</span></li>
+          <li><span><b>Close counts.</b> Three tries on written answers, partial points for near-miss numbers, and rare words you both wrote crit.</span></li>
         </ol>
       </section>
 
       <figure class="example">
         <figcaption class="label">A crack, in the combat log</figcaption>
         <div class="log">
-          <p class="ln shadow crit">Your “Bergham” crits for 7,971 Shadow!</p>
-          <p class="ln physical">Your “pulls” hits for 446 Physical.</p>
-          <p class="ln arcane">Your “sobbing” hits for 1,492 Arcane. (40% resisted)</p>
+          <p class="ln shadow crit">Try 1: Your “Bergham” crits for 7,971 Shadow!</p>
+          <p class="ln physical">Try 2: Your “pulls” hits for 268 Physical (60% on try 2).</p>
+          <p class="ln fire">Your 8 hours lands close: 4,000 of 6,000.</p>
           <p class="ln miss">Your “idiot” missed.</p>
-          <p class="ln dodge">3 words dodged.</p>
         </div>
       </figure>
 
       <p id="homeMe" class="small muted" hidden>On this device you’re <button class="linkbtn" id="homeProfile" type="button">you</button>.</p>
     </section>
 
-    <!-- One prompt (lock in, crack, preview) -->
+    <!-- One question (lock in, crack, preview) -->
     <section id="v-prompt" class="view" aria-labelledby="pText" hidden>
       <div class="qhead">
-        <p class="eyebrow" id="pEyebrow">Lock in · Soulbound #1</p>
-        <p class="count" id="pCount">1 / 5</p>
+        <p class="eyebrow" id="pEyebrow">Soulbound #1</p>
+        <p class="count" id="pCount">1 / 8</p>
       </div>
       <div class="timer" id="pTimer">
         <div class="timer-track" aria-hidden="true"><div class="timer-fill" id="pTimerFill"></div></div>
         <span class="timer-secs" id="pSecs" aria-hidden="true">30s</span>
       </div>
-      <form class="panel" id="pForm" autocomplete="off" novalidate>
-        <p class="asker" id="pAsker" hidden>Motsa wrote…</p>
-        <h1 class="prompt" id="pText" tabindex="-1">Servers go live. Where are you?</h1>
-        <div class="field">
-          <label class="sr" for="pInput" id="pLabel">Your answer</label>
-          <input id="pInput" type="text" maxlength="60" autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false" enterkeyhint="go">
-          <div class="field-foot"><span class="hint" id="pHint" aria-live="polite"></span><span class="counter" id="pCounter">0/60</span></div>
+      <div class="panel" id="pPanel">
+        <p class="asker" id="pAsker" hidden>Guess the answer</p>
+        <h1 class="prompt" id="pText" tabindex="-1">Question</h1>
+        <p class="rule" id="pRule"></p>
+        <div class="result" id="pResult" hidden>
+          <div class="rv-head">
+            <p class="label" id="rvWho">Their answer</p>
+            <p class="rv-score" id="rvScore">0 <span class="of">/ 10,000</span></p>
+          </div>
+          <div id="rvBody"></div>
+          <div class="tagline" id="rvTags" hidden></div>
+          <div class="log" id="rvLog" role="log" aria-live="polite"></div>
         </div>
-        <div class="qnav">
-          <button type="button" class="btn ghost" id="pBack">Back</button>
-          <button type="submit" class="btn primary grow" id="pNext">Next</button>
-        </div>
-      </form>
-
-      <div class="panel" id="pReveal" hidden>
-        <div class="rv-head">
-          <p class="label" id="rvWho">Motsa wrote</p>
-          <p class="rv-score" id="rvScore">0 <span class="of">/ 10,000</span></p>
-        </div>
-        <p class="rv-q" id="rvQ"></p>
-        <p class="redacted" id="rvAnswer"></p>
-        <div class="tagline" id="rvTags"></div>
-        <p class="you" id="rvYou"></p>
-        <div class="log" id="rvLog" role="log" aria-live="polite"></div>
-        <button class="btn primary block" id="rvNext" type="button">Next prompt</button>
+        <form id="pForm" class="stack" autocomplete="off" novalidate>
+          <div id="pControls" class="stack"></div>
+          <div class="field-foot"><span class="hint" id="pHint" aria-live="polite"></span><span class="counter" id="pCounter"></span></div>
+          <div class="qnav">
+            <button type="button" class="btn ghost" id="pBack">Back</button>
+            <button type="button" class="btn ghost" id="pSkip" hidden>Skip</button>
+            <button type="submit" class="btn primary grow" id="pNext">Next</button>
+          </div>
+        </form>
+        <button class="btn primary block" id="pNextQ" type="button" hidden>Next question</button>
       </div>
       <div class="sockets" id="pGems" aria-hidden="true"></div>
       <p class="note" id="pPreview" hidden>Preview as a friend. Nothing is saved.</p>
@@ -537,7 +595,7 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       <div class="stack">
         <p class="eyebrow" id="lockedEyebrow">Soulbound #1 · locked in</p>
         <h1 id="lockedTitle" tabindex="-1">Now send it to your guild</h1>
-        <p class="muted" id="lockedSub">Each friend gets one try per device. Shared rare words crit.</p>
+        <p class="muted" id="lockedSub">Each friend gets one go per device. Close answers still score.</p>
       </div>
       <div class="field">
         <label for="linkField">Your link</label>
@@ -561,12 +619,12 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       <div class="stack">
         <p class="eyebrow" id="introEyebrow">Soulbound #1</p>
         <h1 id="introTitle" tabindex="-1">Crack <span class="cname">Motsa</span>’s mind</h1>
-        <p class="lede-sm"><span class="cname">Motsa</span> locked in 5 answers. Write what you think they wrote.</p>
+        <p class="lede-sm"><span class="cname">Motsa</span> answered 8 questions. Guess what they said.</p>
       </div>
       <ul class="facts">
-        <li>5 prompts, 30 seconds each. When time runs out, your answer goes in.</li>
-        <li>Same words hit. Rare words you both wrote crit.</li>
-        <li>One try per link.</li>
+        <li>Written answers get three tries. Words you hit show up, so you can narrow it down.</li>
+        <li>Numbers and scales score for getting close.</li>
+        <li>Every question is timed, and you get one go per link.</li>
       </ul>
       <p class="note" id="introPast" hidden>This is an older set, so you’ll see <span class="cname">Motsa</span>’s full answers as you go.</p>
       <button class="btn primary block" id="introGo" type="button">Start cracking</button>
@@ -579,15 +637,8 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         <p class="eyebrow" id="resultEyebrow">Soulbound #1</p>
         <h1 id="resultTitle" tabindex="-1">You cracked <span class="cname">Motsa</span></h1>
         <p class="bigscore" id="resultBig"><span id="resultPoints">0</span> <span class="of">/ 50,000</span></p>
-        <p class="small muted" id="resultBonusLine" hidden></p>
       </div>
       <div class="tooltip" id="resultCard"></div>
-
-      <div class="cta gold" id="bonusCta" hidden>
-        <h2>Bonus round</h2>
-        <p class="muted" id="bonusCtaText">Some words are still hidden. Two tries each, half points.</p>
-        <button class="btn primary" id="bonusGo" type="button">Fill the blanks</button>
-      </div>
 
       <form class="cta" id="boardForm" novalidate hidden>
         <h2>Put your name on <span class="cname">Motsa</span>’s board</h2>
@@ -613,25 +664,13 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         <p class="copied" id="resultState" role="status"></p>
       </div>
 
-      <details class="answers" id="resultDetails"><summary>Prompt by prompt</summary><ol class="alist" id="resultList"></ol></details>
+      <details class="answers" id="resultDetails"><summary>Question by question</summary><ol class="alist" id="resultList"></ol></details>
 
       <div class="cta" id="turnBox">
         <h2 id="turnTitle">Your turn</h2>
-        <p class="muted" id="turnText">Lock in today’s 5 and see who can crack you.</p>
-        <button class="btn primary" id="yourTurn" type="button">Lock in today’s 5</button>
+        <p class="muted" id="turnText">Lock in today’s 8 and see who can crack you.</p>
+        <button class="btn primary" id="yourTurn" type="button">Lock in today’s 8</button>
       </div>
-    </section>
-
-    <!-- Bonus round -->
-    <section id="v-bonus" class="view" aria-labelledby="bonusTitle" hidden>
-      <div class="stack">
-        <p class="eyebrow" id="bonusEyebrow">Bonus round</p>
-        <h1 id="bonusTitle" tabindex="-1">Fill the blanks</h1>
-        <p class="muted">Each block is one hidden word, sized by its letters. Two tries per word, typos are fine, half points. Unsolved words stay hidden until the next set.</p>
-      </div>
-      <div id="bonusList" class="stack"></div>
-      <p class="bigscore sm" id="bonusPoints" aria-live="polite">+0 bonus</p>
-      <button class="btn primary block" id="bonusDone" type="button">See result</button>
     </section>
 
     <!-- Profile -->
@@ -681,13 +720,13 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       <div class="stack">
         <p class="eyebrow" id="askEyebrow">Soulbound #1</p>
         <h1 id="askTitle" tabindex="-1"><span class="aname">Motsa</span> wants to crack your mind</h1>
-        <p class="lede-sm">Lock in today’s 5 answers, then send your link back to <span class="aname">Motsa</span>.</p>
+        <p class="lede-sm">Answer today’s 8 questions, then send your link back to <span class="aname">Motsa</span>.</p>
       </div>
       <ul class="facts">
-        <li>5 prompts, 30 seconds each. Write your first thought.</li>
-        <li>Short answers work best: one sentence, up to 60 characters.</li>
+        <li>A few written answers, two numbers, two scales and a yes-or-no.</li>
+        <li>Go with your first thought. It takes about 2 minutes.</li>
       </ul>
-      <button class="btn primary block" id="askGo" type="button">Lock in today’s 5</button>
+      <button class="btn primary block" id="askGo" type="button">Lock in today’s 8</button>
     </section>
 
     <!-- Broken link -->
@@ -696,7 +735,7 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         <h1 id="invalidTitle" tabindex="-1">That link didn’t work</h1>
         <p class="muted" id="invalidWhy">It may have been cut off when it was copied. Ask for it again, or lock in your own.</p>
       </div>
-      <button class="btn primary block" id="invalidLock" type="button">Lock in today’s 5</button>
+      <button class="btn primary block" id="invalidLock" type="button">Lock in today’s 8</button>
       <button class="btn ghost block" id="invalidHome" type="button">Home</button>
     </section>
   </main>
@@ -733,67 +772,96 @@ const Engine = (() => {
   'use strict';
 
   /* ---------- Daily sets ---------- */
-  // Day 1 starts at EPOCH. Everyone gets the same 5 prompts; a new set unlocks every day at 09:00 UTC.
+  // Day 1 starts at EPOCH. Everyone gets the same 8 questions; a new set unlocks every day at 09:00 UTC.
   const EPOCH = Date.UTC(2026, 9, 31, 9, 0, 0);
   const DAY_MS = 864e5;
   const WHO = ['me', 'myself', 'you', 'us', 'we', 'him', 'her', 'them'];
-  const SHOUT = ['yes', 'no', 'lol', 'lmao', 'haha', 'ok', 'oh'];
-  // q: prompt; ph: input hint; common: obvious answers (score low); keep: words that count here even though they're usually filler.
+  // Types: open (typed words, three tries), number (points for getting close), scale (1–5), yesno,
+  // choice (one of four, two tries), multi (pick up to `pick`). q is asked of the creator, qc of friends ({name} = creator).
+  // Points per type keep every day at exactly 50,000: three 10,000 slots, two numbers, two scales, one yes-or-no.
+  const TYPE_POINTS = { open: 10000, choice: 10000, multi: 10000, number: 6000, scale: 3000, yesno: 2000 };
+  const TRY_FACTORS = [1, 0.6, 0.3];
+  const CHOICE_FACTORS = [1, 0.4];
+  const O = (id, q, qc, ph, common, keep) => ({ id, type: 'open', q, qc, ph, common: common || '', keep });
+  const N = (id, q, qc, unit, min, max, close) => ({ id, type: 'number', q, qc, unit, min, max, ...close });
+  const S5 = (id, q, qc, lo, hi) => ({ id, type: 'scale', q, qc, lo, hi });
+  const YN = (id, q, qc) => ({ id, type: 'yesno', q, qc });
   const SETS = [
     [
-      { q: 'Servers go live. Where are you?', ph: 'Where, exactly?', common: 'queue home desk computer pc bed work couch chair room office line screen login discord' },
-      { q: 'Name the guildie who dies first in Forever.', ph: 'A name. Be honest.', common: 'tank healer hunter warrior mage rogue priest everyone nobody', keep: WHO },
-      { q: 'What will you name your first character?', ph: 'Character name', common: '' },
-      { q: 'One word for the launch queue.', ph: 'One word', common: 'long pain endless forever queue wait slow hell suffering torture nightmare boring ugh rip' },
-      { q: 'First thing you do at level 60?', ph: 'The very first thing', common: 'dungeon raid mount gold farm alt sleep ding celebrate gear quest grind logout dance scream' }
+      O('B04', 'What will you tell your boss on launch day?', 'What will {name} tell their boss on launch day?', 'The excuse', 'sick ill flu nothing doctor dentist family emergency remote home vacation holiday headache migraine'),
+      N('B18', 'How many minutes will you spend in the character creator?', 'How many minutes will {name} spend in the character creator?', 'minutes', 1, 120, { ratio: 3 }),
+      S5('B33', 'How smelly is your character?', 'How smelly does {name} say their character is?', 'Fresh', 'Swamp'),
+      O('N17', 'Who would you call at 3am for a summon?', 'Who would {name} call at 3am for a summon?', 'A name', 'nobody guildmaster tank healer mage warlock', WHO),
+      YN('B62', 'Will you be online the minute servers open?', 'Will {name} be online the minute servers open?'),
+      S5('B41', 'How sweaty is your guild?', 'How sweaty does {name} say the guild is?', 'Chill', 'Spreadsheets'),
+      N('N73', 'What year did you start playing WoW?', 'What year did {name} start playing WoW?', '', 2004, 2026, { tol: 6 }),
+      O('N67', 'If your guild were a band, what’s it called?', 'If {name}’s guild were a band, what would {name} call it?', 'The band name', 'band')
     ],
     [
-      { q: 'Which zone feels most like a Monday?', ph: 'A zone', common: 'barrens westfall desolace stranglethorn duskwood elwynn darkshore lochmodan ashenvale badlands tanaris swamp wetlands dustwallow' },
-      { q: 'Who gets blamed for the first wipe?', ph: 'Who, and why', common: 'tank healer hunter lag pet warlock mage rogue puller raidleader', keep: WHO },
-      { q: 'Your duo goes AFK mid-pull. What do you type?', ph: 'Exactly what you’d type', common: 'afk wtf hello dude bro help rip back where omg bruh', keep: SHOUT },
-      { q: 'Describe your main in three words.', ph: 'Three words', common: 'dps tank healer warrior mage rogue hunter priest paladin shaman druid warlock sexy angry tall short cute strong fat bald' },
-      { q: 'What will you spend your first 100 gold on?', ph: 'Gold goes where?', common: 'mount bags gear riding skill spells training horse wolf potions auctionhouse repair pet' }
+      O('B05', 'Which guildie will hit 60 first?', 'Which guildie does {name} think will hit 60 first?', 'A name', 'nobody tank hunter guildmaster', WHO),
+      N('B13', 'How many hours will you play on launch day?', 'How many hours will {name} play on launch day?', 'hours', 0, 24, { tol: 6 }),
+      S5('B40', 'How much do you care how your character looks?', 'How much does {name} care how their character looks?', 'Whatever drops', 'Full fashion'),
+      O('N10', 'Which race matches your real personality?', 'Which race matches {name}’s real personality?', 'A race', 'human dwarf gnome nightelf orc troll tauren undead'),
+      YN('B57', 'Do you name your mounts?', 'Does {name} name their mounts?'),
+      S5('B34', 'How salty are you after a wipe?', 'How salty does {name} get after a wipe?', 'Zen', 'Alt+F4'),
+      N('B30', 'How many hours have you played WoW in your life?', 'How many hours has {name} played WoW in their life?', 'hours', 0, 50000, { ratio: 4 }),
+      { id: 'B10', type: 'choice', q: 'Pick a name for your guild’s tavern.', qc: 'Which tavern name did {name} pick for the guild?', options: ['The Wiped Raid', 'Murloc & Mug', 'The Last Pull', 'Leeroy’s Rest'] }
     ],
     [
-      { q: 'Where is your hearthstone set?', ph: 'An inn, a city…', common: 'inn home stormwind orgrimmar ironforge undercity thunderbluff darnassus goldshire crossroads bootybay gadgetzan brill' },
-      { q: 'Name the most annoying sound in Azeroth.', ph: 'Describe the sound', common: 'murloc mrgl gnome level ding whisper readycheck mount wolf raptor kodo aggro' },
-      { q: 'What did you yell the last time something good dropped?', ph: 'Your exact words', common: 'yes finally omg letsgo wow yay mine need woo hellyeah lfg', keep: SHOUT },
-      { q: 'Which class would you never play?', ph: 'A class', common: 'warrior paladin hunter rogue priest shaman mage warlock druid' },
-      { q: 'What snack is next to your keyboard right now?', ph: 'Be honest', common: 'chips crisps nothing coffee water chocolate candy nuts popcorn pizza cookies energydrink monster soda' }
+      O('B06', 'Who in your guild would sell you out for 10 gold?', 'Who does {name} think would sell them out for 10 gold?', 'A name', 'everyone nobody rogue guildmaster', WHO),
+      N('B20', 'How many coffees or energy drinks will you have on launch day?', 'How many coffees or energy drinks will {name} have on launch day?', 'drinks', 0, 20, { tol: 4 }),
+      S5('B38', 'How organized are your bags?', 'How organized does {name} say their bags are?', 'Chaos', 'Sorted by color'),
+      O('N49', 'Finish this: “One more dungeon, then…”', 'How does {name} finish this: “One more dungeon, then…”', 'Finish the line', 'bed sleep another work shower food'),
+      YN('B54', 'Have you ever ninja-looted?', 'Has {name} ever ninja-looted?'),
+      S5('B36', 'How loud are you on voice chat?', 'How loud does {name} say they are on voice chat?', 'Silent', 'Neighbors complain'),
+      N('B21', 'How many guildies will be online at launch?', 'How many guildies does {name} think will be online at launch?', 'guildies', 0, 100, { ratio: 2.5 }),
+      O('N33', 'Which zone has the best music?', 'Which zone does {name} think has the best music?', 'A zone', '')
     ],
     [
-      { q: 'Raids unlock Dec 9. Which raid are you dreaming about?', ph: 'A raid', common: 'onyxia moltencore hyjal barrowdeeps blackwinglair naxxramas zulgurub ahnqiraj ragnaros none' },
-      { q: 'Who in your guild would ninja loot?', ph: 'A name, no mercy', common: 'hunter rogue everyone guildmaster officer nobody warlock', keep: WHO },
-      { q: 'What’s your duo’s catchphrase?', ph: 'The catchphrase', common: 'letsgo gg ez rip oops again pull brb', keep: SHOUT },
-      { q: 'Your excuse for being late to raid?', ph: 'The excuse', common: 'work traffic dinner wife girlfriend kids dog internet lag update patch forgot sleep shower food' },
-      { q: 'Which NPC would you take on a date?', ph: 'An NPC', common: 'jaina sylvanas thrall innkeeper hogger vancleef onyxia mankrik anduin varian' }
+      O('N01', 'The night before launch, what are you doing?', 'The night before launch, what is {name} doing?', 'Tonight’s plan', 'sleep queue prep work nothing gaming download patch'),
+      N('N02', 'How many hours will you sleep on launch night?', 'How many hours will {name} sleep on launch night?', 'hours', 0, 12, { tol: 4 }),
+      S5('B44', 'How much drama will your guild have this month?', 'How much drama does {name} expect in the guild this month?', 'None', 'Reality show'),
+      O('B03', 'What will you snack on at 3am on launch night?', 'What will {name} snack on at 3am on launch night?', 'The snack', 'chips crisps pizza nothing cereal noodles ramen sandwich'),
+      YN('B63', 'Have you ever cried over a drop?', 'Has {name} ever cried over a drop?'),
+      S5('B49', 'How much do you talk to strangers in-game?', 'How much does {name} talk to strangers in-game?', 'Never', 'Everyone’s friend'),
+      N('B28', 'What hour will you log off on launch night?', 'What hour will {name} log off on launch night?', 'clock', 0, 23, { tol: 4, circular: 24 }),
+      O('N03', 'What breaks first on launch day?', 'What does {name} think breaks first on launch day?', 'One thing', 'servers server queue login sleep chair keyboard')
     ],
     [
-      { q: 'Hardcore lands this winter. How do you die first?', ph: 'How, exactly?', common: 'fall falldamage murloc elite drown lag pull aggro ganked fire guards hogger defias' },
-      { q: 'Name the dungeon you’d delete forever.', ph: 'A dungeon', common: 'deadmines wailingcaverns shadowfang scarletmonastery maraudon uldaman stratholme blackrockdepths razorfen gnomeregan sunkentemple zulfarrak ragefire' },
-      { q: 'What’s the most used word in your guild chat?', ph: 'One word', common: 'lol gg kek kekw lmao rip thanks congrats bruh invite pull afk haha xd', keep: SHOUT },
-      { q: 'Skyborne, the new race, in one word?', ph: 'One word', common: 'bird birds cool cringe wings pass flying majestic dumb hype ugly pretty' },
-      { q: 'What do you do while waiting for a summon?', ph: 'While you wait', common: 'afk phone fish fishing dance snack toilet pee sit emote scroll tiktok youtube coffee' }
+      O('N48', 'Your last words before a Leeroy-style pull?', 'What are {name}’s last words before a Leeroy-style pull?', 'The last words', 'leeroy jenkins chicken lets do this'),
+      N('B14', 'What level will you be when you first log off?', 'What level will {name} be when they first log off?', 'level', 1, 60, { tol: 10 }),
+      S5('B39', 'How much quest text do you actually read?', 'How much quest text does {name} say they read?', 'None', 'Every word'),
+      O('N50', 'Finish this: “Sorry I’m late, …”', 'How does {name} finish this: “Sorry I’m late, …”', 'Finish the line', 'work traffic dinner sleep forgot kids wife girlfriend dog'),
+      YN('B52', 'Will you hit 60 before Christmas?', 'Will {name} hit 60 before Christmas?'),
+      S5('B37', 'How likely are you to pull extra mobs?', 'How likely is {name} to pull extra mobs?', 'Never', 'Every pack'),
+      N('B19', 'How many minutes until your first death?', 'How many minutes until {name}’s first death?', 'minutes', 0, 240, { ratio: 3 }),
+      { id: 'B09', type: 'multi', q: 'If your guild were a pizza, what’s on it?', qc: 'Which toppings did {name} put on the guild pizza?', pick: 3, options: ['Murloc', 'Pineapple', 'Extra cheese', 'Mana potion', 'Boar ribs', 'Mushrooms', 'Hot peppers', 'Mystery meat'] }
     ],
     [
-      { q: 'One word for Barrens chat.', ph: 'One word', common: 'chucknorris mankrik toxic chaos cancer lol spam trolls cringe funny noob hell' },
-      { q: 'Your duo as an animal?', ph: 'An animal', common: 'dog cat monkey sloth raccoon bear owl pig goose duck wolf rat chicken hamster' },
-      { q: 'Which mount are you saving up for?', ph: 'The mount', common: 'wolf horse raptor kodo tiger ram mechanostrider nightsaber epic mount swift qiraji deathcharger' },
-      { q: 'Name a guildie who’d survive a zombie apocalypse.', ph: 'A name', common: 'nobody tank rogue hunter warrior priest guildmaster', keep: WHO },
-      { q: 'What’s your first macro going to say?', ph: 'The macro text', common: 'inc pull help heal taunt oom sheep polymorph cc run gg' }
+      O('N46', 'Your guild’s unofficial motto?', 'What’s the unofficial motto of {name}’s guild?', 'The motto', ''),
+      N('B15', 'How many days will it take you to hit 60?', 'How many days will it take {name} to hit 60?', 'days', 1, 365, { ratio: 3 }),
+      S5('B42', 'How bad is your sense of direction in Azeroth?', 'How bad does {name} say their sense of direction is?', 'Human GPS', 'Lost in Goldshire'),
+      O('N70', 'Which NPC would you swap lives with for a week?', 'Which NPC would {name} swap lives with for a week?', 'An NPC', ''),
+      YN('B60', 'Do you play with the sound on?', 'Does {name} play with the sound on?'),
+      S5('B45', 'How competitive are you?', 'How competitive does {name} say they are?', 'Just vibes', 'Must top the meters'),
+      N('B16', 'How many times will you die on the way to 60?', 'How many times will {name} die on the way to 60?', 'deaths', 0, 500, { ratio: 3 }),
+      O('N65', 'Three things on your desk right now.', 'Name three things on {name}’s desk right now.', 'Three things', 'keyboard mouse monitor screen cup mug coffee phone headset water')
     ],
     [
-      { q: 'What will you miss most about real life during launch week?', ph: 'One thing', common: 'sleep sun sunlight friends family food shower wife girlfriend kids outside grass nothing work job daylight' },
-      { q: 'Who’s actually the best healer in your guild?', ph: 'A name', common: 'priest druid shaman paladin nobody healer', keep: WHO },
-      { q: 'Your character’s secret middle name?', ph: 'Middle name', common: '' },
-      { q: 'Describe tonight’s group in one word.', ph: 'One word', common: 'chaos wipe fun cursed mess legends noobs drunk clowns sweaty chill' },
-      { q: 'What do you shout when the boss finally dies?', ph: 'Your exact shout', common: 'yes finally gg letsgo loot woo hellyeah omg lfg ez yay', keep: SHOUT }
+      O('N53', 'Finish this: “Our guild would fall apart without…”', 'How does {name} finish this: “Our guild would fall apart without…”', 'Finish the line', 'tank healer guildmaster discord', WHO),
+      N('B24', 'How many hours until you hit level 10?', 'How many hours until {name} hits level 10?', 'hours', 0, 48, { tol: 4 }),
+      S5('B50', 'How likely are you to roll an alt in week one?', 'How likely is {name} to roll an alt in week one?', 'No way', 'Already planned'),
+      O('N55', 'One word for your playstyle.', 'What’s {name}’s playstyle in one word?', 'One word', 'chaos casual chill sweaty'),
+      YN('B64', 'Will you still be playing in March?', 'Will {name} still be playing in March?'),
+      S5('B47', 'How often do you stand in fire?', 'How often does {name} admit to standing in fire?', 'Never', 'It’s my home'),
+      N('B22', 'What percentage of your guild will quit by Christmas?', 'What percentage of the guild does {name} think will quit by Christmas?', '%', 0, 100, { tol: 30 }),
+      O('N71', 'If your guild had a mascot, what would it be?', 'What mascot would {name} pick for the guild?', 'The mascot', 'murloc gnome chicken boar')
     ]
   ];
-  const PER_DAY = 5;
+  const PER_DAY = 8;
   const MAX_CHARS = 60;
   const PROMPT_POINTS = 10000;
-  const MAX_POINTS = PER_DAY * PROMPT_POINTS;
+  const MAX_POINTS = 50000;
 
   function dayAt(t) { return Math.max(1, Math.floor((t - EPOCH) / DAY_MS) + 1); }
   function dayStart(day) { return EPOCH + (day - 1) * DAY_MS; }
@@ -801,6 +869,34 @@ const Engine = (() => {
   function setFor(day) {
     const i = (((day - 1) % SETS.length) + SETS.length) % SETS.length;
     return SETS[i];
+  }
+  function qFor(p, name) { return p.qc.replace(/\{name\}/g, name); }
+  function fmtNumber(p, v) {
+    if (p.unit === 'level') return `Level ${v}`;
+    if (p.unit === '%') return `${v}%`;
+    if (p.unit === 'clock') return `${String(v).padStart(2, '0')}:00`;
+    if (!p.unit) return String(v);
+    const u = v === 1 && p.unit.endsWith('s') ? p.unit.slice(0, -1) : p.unit;
+    return `${v.toLocaleString('en-US')} ${u}`;
+  }
+  function rangeLabel(p) {
+    if (p.unit === 'level') return `Level ${p.min}–${p.max}`;
+    if (p.unit === 'clock') return '0–23, hour of the day';
+    if (p.unit === '%') return `${p.min}–${p.max}%`;
+    if (!p.unit) return `${p.min}–${p.max}`;
+    return `${p.min.toLocaleString('en-US')}–${p.max.toLocaleString('en-US')} ${p.unit}`;
+  }
+  const bits = m => { let c = 0; for (let x = m; x; x &= x - 1) c++; return c; };
+  function fmtAnswer(p, v) {
+    switch (p.type) {
+      case 'open': return String(v);
+      case 'number': return fmtNumber(p, v);
+      case 'scale': return v === 1 ? `1 of 5 (${p.lo})` : v === 5 ? `5 of 5 (${p.hi})` : v === 3 ? '3 of 5 (in between)' : `${v} of 5 (leaning ${v < 3 ? p.lo : p.hi})`;
+      case 'yesno': return v ? 'Yes' : 'No';
+      case 'choice': return p.options[v] || '';
+      case 'multi': return p.options.filter((_, i) => v & (1 << i)).join(', ');
+      default: return String(v);
+    }
   }
 
   /* ---------- Bond tiers (item quality), by share of 50,000 ---------- */
@@ -816,10 +912,10 @@ const Engine = (() => {
     const p = max > 0 ? points / max : 0;
     return TIERS.find(t => p >= t.min) || TIERS[TIERS.length - 1];
   }
-  // One square per prompt for the share text.
-  function squareFor(points) {
+  // One square per question for the share text.
+  function squareFor(points, max = PROMPT_POINTS) {
     if (points <= 0) return '⬛';
-    return tierFor(points, PROMPT_POINTS).emoji;
+    return tierFor(points, max).emoji;
   }
 
   /* ---------- Handles ---------- */
@@ -891,24 +987,51 @@ const Engine = (() => {
     const flat = String(s || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
     return flat.slice(0, MAX_CHARS).trim();
   }
-  // v3 layout: [3, dayHi, dayLo, handleLen, handle…, nameLen, name…, count, (len, answer…)×count, sumA, sumB]
+  function validNumber(p, v) {
+    return Number.isInteger(v) && v >= p.min && v <= p.max;
+  }
+  function validAnswer(p, a) {
+    switch (p.type) {
+      case 'open': return typeof a === 'string' && /[\p{L}\p{N}]/u.test(cleanAnswer(a));
+      case 'number': return validNumber(p, a);
+      case 'scale': return Number.isInteger(a) && a >= 1 && a <= 5;
+      case 'yesno': return a === 0 || a === 1;
+      case 'choice': return Number.isInteger(a) && a >= 0 && a < p.options.length;
+      case 'multi': return Number.isInteger(a) && a > 0 && a < (1 << p.options.length) && bits(a) <= p.pick;
+      default: return false;
+    }
+  }
+  // v4 layout: [4, dayHi, dayLo, handleLen, handle…, nameLen, name…, count, answer per question by type, sumA, sumB]
+  // open = len + UTF-8, number = 3 bytes, scale/yesno/choice/multi = 1 byte.
   function encodeLink({ handle, name, day, answers }) {
     if (!HANDLE_RE.test(handle)) throw new Error('handle');
     if (!(day >= 1 && day < 65536)) throw new Error('day');
+    const set = setFor(day);
+    if (!Array.isArray(answers) || answers.length !== set.length) throw new Error('count');
     const enc = new TextEncoder();
     const nm = cleanName(name);
     const nb = nm && nm !== cap(handle) ? enc.encode(nm) : new Uint8Array(0);
-    const body = [3, day >> 8, day & 255, handle.length, ...enc.encode(handle), nb.length, ...nb, answers.length];
-    for (const a of answers) {
-      const ab = enc.encode(cleanAnswer(a));
-      if (!ab.length || ab.length > 255) throw new Error('answer');
-      body.push(ab.length, ...ab);
-    }
+    const body = [4, day >> 8, day & 255, handle.length, ...enc.encode(handle), nb.length, ...nb, set.length];
+    set.forEach((p, i) => {
+      const a = answers[i];
+      if (!validAnswer(p, a)) throw new Error('answer ' + (i + 1));
+      if (p.type === 'open') {
+        const ab = enc.encode(cleanAnswer(a));
+        if (ab.length > 255) throw new Error('answer ' + (i + 1));
+        body.push(ab.length, ...ab);
+      } else if (p.type === 'number') body.push((a >> 16) & 255, (a >> 8) & 255, a & 255);
+      else body.push(a);
+    });
     body.push(...fletcher(body));
     return toB62(scramble(Uint8Array.from(body)));
   }
   function decodeLink(code) {
-    const bytes = scramble(fromB62(code));
+    // The checksum covers every byte before it in all link versions, so a damaged link fails here, before the version check.
+    const all = scramble(fromB62(code));
+    if (all.length < 6) throw new Error('too short');
+    const bytes = all.slice(0, all.length - 2);
+    const [ca, cb] = fletcher(bytes);
+    if (ca !== all[all.length - 2] || cb !== all[all.length - 1]) throw new Error('checksum');
     let p = 0;
     const take = k => {
       if (p + k > bytes.length) throw new Error('too short');
@@ -917,7 +1040,8 @@ const Engine = (() => {
       return out;
     };
     const dec = new TextDecoder('utf-8', { fatal: true });
-    if (take(1)[0] !== 3) throw new Error('version');
+    const ver = take(1)[0];
+    if (ver !== 4) { const e = new Error('version'); e.ver = ver; throw e; }
     const [dh, dl] = take(2);
     const day = dh * 256 + dl;
     if (day < 1) throw new Error('day');
@@ -927,20 +1051,21 @@ const Engine = (() => {
     const nl = take(1)[0];
     if (nl > 64) throw new Error('name length');
     const name = nl ? cleanName(dec.decode(take(nl))) : '';
-    const n = take(1)[0];
-    if (n !== PER_DAY) throw new Error('count');
-    const answers = [];
-    for (let i = 0; i < n; i++) {
-      const al = take(1)[0];
-      if (!al) throw new Error('empty answer');
-      const a = cleanAnswer(dec.decode(take(al)));
-      if (!/[\p{L}\p{N}]/u.test(a)) throw new Error('empty answer');
-      answers.push(a);
-    }
-    const [sa, sb] = take(2);
+    const set = setFor(day);
+    if (take(1)[0] !== set.length) throw new Error('count');
+    const answers = set.map((q) => {
+      let a;
+      if (q.type === 'open') {
+        const al = take(1)[0];
+        a = cleanAnswer(dec.decode(take(al)));
+      } else if (q.type === 'number') {
+        const [x, y, z] = take(3);
+        a = (x << 16) | (y << 8) | z;
+      } else a = take(1)[0];
+      if (!validAnswer(q, a)) throw new Error('answer');
+      return a;
+    });
     if (p !== bytes.length) throw new Error('trailing data');
-    const [ca, cb] = fletcher(bytes.slice(0, p - 2));
-    if (ca !== sa || cb !== sb) throw new Error('checksum');
     return { handle, name: name || cap(handle), day, answers };
   }
 
@@ -1385,14 +1510,29 @@ const Engine = (() => {
     if (how === 'alias' || how === 'synonym') return 'arcane';
     return 'physical';
   }
-  function crack(an, guessText) {
+  function crack(an, guessText, opts = {}) {
     const foreign = an.foreign;
     const gt = tokenize(guessText);
     gt.forEach(t => { t.stop = isStopTok(t, an.keep, foreign); });
     const used = new Set();
     const hits = new Array(an.content.length).fill(null);
     const order = an.content.map((_, i) => i).sort((a, b) => an.content[b].share - an.content[a].share);
+    const ex = opts.exclude || null;
+    if (ex) {
+      // Words already found on an earlier try: retyping them is free, they just don't score again.
+      for (const ci of ex) {
+        const c = an.content[ci];
+        let best = null;
+        gt.forEach((g, gi) => {
+          if (used.has(gi)) return;
+          const m = landing(c, g, { stopGuess: g.stop && !an.fallback });
+          if (m && (!best || m.q > best.q)) best = { ...m, gi };
+        });
+        if (best) used.add(best.gi);
+      }
+    }
     for (const ci of order) {
+      if (ex && ex.has(ci)) continue;
       const c = an.content[ci];
       let best = null;
       gt.forEach((g, gi) => {
@@ -1420,7 +1560,55 @@ const Engine = (() => {
     if (perfect) points = PROMPT_POINTS;
     return { hits, misses, extra, penalty, points, perfect, empty: !gt.length };
   }
-  // Bonus round: one guess at one hidden word. Exact, alias or typo only.
+  // Open question over up to three tries. Each try scores only words not found yet, at 100%, 60%, 30%.
+  function scoreOpen(an, tries) {
+    const hitAt = new Array(an.content.length).fill(null);
+    const steps = [];
+    let points = 0;
+    let perfect = false;
+    for (let t = 0; t < Math.min(tries.length, TRY_FACTORS.length); t++) {
+      const exclude = new Set();
+      hitAt.forEach((h, i) => { if (h) exclude.add(i); });
+      const r = crack(an, tries[t] || '', { exclude });
+      let raw = 0;
+      r.hits.forEach((h, ci) => { if (h) { hitAt[ci] = { ...h, t }; raw += an.content[ci].share * h.q; } });
+      let pts = Math.round(raw * r.penalty * TRY_FACTORS[t]);
+      if (t === 0 && r.perfect) { pts = PROMPT_POINTS; perfect = true; }
+      steps.push({ t, guess: tries[t] || '', hits: r.hits, misses: r.misses, penalty: r.penalty, points: pts, empty: r.empty, factor: TRY_FACTORS[t] });
+      points += pts;
+    }
+    const remaining = hitAt.filter(h => !h).length;
+    return { points: Math.min(PROMPT_POINTS, points), steps, hitAt, remaining, perfect };
+  }
+  // Number closeness: 1 for exact, falling to 0 at `tol` away (or `ratio` times off for wide ranges).
+  function closeness(p, a, g) {
+    if (g == null || !Number.isFinite(g)) return 0;
+    if (g === a) return 1;
+    let c;
+    if (p.ratio) c = 1 - Math.abs(Math.log((g + 1) / (a + 1))) / Math.log(p.ratio);
+    else {
+      let d = Math.abs(g - a);
+      if (p.circular) d = Math.min(d, p.circular - d);
+      c = 1 - d / p.tol;
+    }
+    return Math.max(0, Math.min(1, c));
+  }
+  // Every non-open question: the share of its points a set of tries earns.
+  function scoreSimple(p, a, tries) {
+    const W = TYPE_POINTS[p.type];
+    const g = tries[0];
+    let c = 0;
+    switch (p.type) {
+      case 'number': c = closeness(p, a, g); break;
+      case 'scale': { const d = g == null ? 9 : Math.abs(g - a); c = d === 0 ? 1 : d === 1 ? 0.5 : 0; break; }
+      case 'yesno': c = g === a ? 1 : 0; break;
+      case 'choice': for (let t = 0; t < Math.min(tries.length, CHOICE_FACTORS.length); t++) if (tries[t] === a) { c = CHOICE_FACTORS[t]; break; } break;
+      case 'multi': { const gm = g || 0; c = bits(a & gm) / Math.max(bits(a), bits(gm), 1); break; }
+      default: c = 0;
+    }
+    return { c, points: Math.round(W * c), max: W };
+  }
+  // Bonus round (v3): one guess at one hidden word. Exact, alias or typo only.
   function fillBlank(an, ci, text) {
     const c = an.content[ci];
     let best = null;
@@ -1438,10 +1626,10 @@ const Engine = (() => {
   }
 
   return {
-    EPOCH, DAY_MS, SETS, PER_DAY, MAX_CHARS, PROMPT_POINTS, MAX_POINTS, TIERS, HANDLE_RE,
-    dayAt, dayStart, nextReset, setFor, tierFor, squareFor,
+    EPOCH, DAY_MS, SETS, PER_DAY, MAX_CHARS, PROMPT_POINTS, MAX_POINTS, TIERS, HANDLE_RE, TYPE_POINTS, TRY_FACTORS, CHOICE_FACTORS,
+    dayAt, dayStart, nextReset, setFor, tierFor, squareFor, qFor, fmtNumber, fmtAnswer, rangeLabel, validAnswer, bits,
     slug, cleanName, cleanAnswer, cap, handleProblem,
-    encodeLink, decodeLink, tokenize, isForeign, analyze, crack, fillBlank,
+    encodeLink, decodeLink, tokenize, isForeign, analyze, crack, scoreOpen, closeness, scoreSimple, fillBlank,
     _internal: { stem, squeeze, dl, rarityOf, bandOfWord, BAND, FOREIGN, STOP, GAME, SYN_OF, promptInfo }
   };
 })();
@@ -1459,27 +1647,28 @@ const Engine = (() => {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
   };
-  const TIMER_MS = 30000;
   const SCHOOL = { physical: 'Physical', fire: 'Fire', shadow: 'Shadow', arcane: 'Arcane', white: '' };
+  const TYPE_LABEL = { open: 'Write it', number: 'Number', scale: 'Scale', yesno: 'Yes or no', choice: 'Pick one', multi: 'Pick a few' };
+  const KEY = { me: 'sb_me', mine: 'sb4_mine', reads: 'sb4_reads', board: 'sb4_board', events: 'sb_events' };
 
   function track(ev, props) {
     // Prototype: console + localStorage counts. Live: an analytics call or a Supabase insert.
     try {
       console.debug('[track]', ev, props || {});
-      const c = store.get('sb_events') || {};
+      const c = store.get(KEY.events) || {};
       c[ev] = (c[ev] || 0) + 1;
-      store.set('sb_events', c);
+      store.set(KEY.events, c);
     } catch (e) { /* ignore */ }
   }
 
   /* ---------- Local records ---------- */
   const getMe = () => {
-    const m = store.get('sb_me');
+    const m = store.get(KEY.me);
     return m && E.HANDLE_RE.test(m.handle || '') ? m : null;
   };
-  const getMine = () => store.get('sb_mine') || {};
-  const getReads = () => store.get('sb_reads') || {};
-  const getBoards = () => store.get('sb_board') || {};
+  const getMine = () => store.get(KEY.mine) || {};
+  const getReads = () => store.get(KEY.reads) || {};
+  const getBoards = () => store.get(KEY.board) || {};
   const today = () => E.dayAt(Date.now());
   const readKey = (handle, day, code) => `${handle}-${day}-${code.slice(-12)}`;
 
@@ -1489,20 +1678,18 @@ const Engine = (() => {
     mode: null,        // 'lock' | 'crack' | 'preview'
     day: today(),
     idx: 0,
-    answers: [],
-    askFrom: '',       // handle of whoever asked you to lock in
-    claimNext: '',     // what the name screen continues to
-    code: '',          // open crack link
-    guesses: [],
-    revealed: false,
-    bonus: {},         // { prompt: { word: { tries, pts, q } } }
-    saved: null,       // where a preview returns to
+    answers: [],       // lock in: one typed value per question
+    askFrom: '',
+    claimNext: '',
     pending: null,     // finished answers waiting for a name
+    code: '',          // open crack link
+    g: [],             // crack: per question { tries: [], done }
+    saved: null,       // where a preview returns to
     profile: ''
   };
   let LINK = null;     // decoded open link
-  let AN = [];         // analysed answers of the open link
-  let RES = [];        // crack results per prompt
+  let AN = [];         // analysed open answers (null for other types)
+  let multiSel = 0;    // current pick-a-few selection
 
   function inFrame() {
     try { return window.self !== window.top; } catch (e) { return true; }
@@ -1512,8 +1699,9 @@ const Engine = (() => {
     return location.href.replace(/#.*$/, '');
   }
   const linkFor = (handle, day, code) => `${baseUrl()}#${handle}-${day}-${code}`;
+  const setOf = day => E.setFor(day);
 
-  const VIEWS = ['home', 'prompt', 'claim', 'locked', 'intro', 'result', 'bonus', 'profile', 'ask', 'invalid'];
+  const VIEWS = ['home', 'prompt', 'claim', 'locked', 'intro', 'result', 'profile', 'ask', 'invalid'];
   function show(view, focusId, chip) {
     S.view = view;
     for (const v of VIEWS) $('v-' + v).hidden = v !== view;
@@ -1526,7 +1714,6 @@ const Engine = (() => {
   }
   function setText(cls, text) { document.querySelectorAll('.' + cls).forEach(n => { n.textContent = text; }); }
 
-  // The page's own address carries the open link, so a reload or the host's share link keeps it.
   let ownHash = '';
   function setHash(h) {
     ownHash = h;
@@ -1620,18 +1807,21 @@ const Engine = (() => {
   /* ---------- Timer ---------- */
   let tick = null;
   let deadline = 0;
+  let timerTotal = 30000;
   function stopTimer() { if (tick) { clearInterval(tick); tick = null; } }
   function startTimer(ms, soft, onEnd) {
     stopTimer();
+    timerTotal = ms;
     deadline = Date.now() + ms;
     const box = $('pTimer'), fill = $('pTimerFill'), secs = $('pSecs');
+    box.hidden = false;
     box.dataset.soft = soft ? '1' : '';
     box.dataset.done = '';
     const step = () => {
       const left = Math.max(0, deadline - Date.now());
-      fill.style.transform = `scaleX(${left / TIMER_MS})`;
+      fill.style.transform = `scaleX(${left / timerTotal})`;
       secs.textContent = left > 0 ? `${Math.ceil(left / 1000)}s` : (soft ? 'Gut call' : '0s');
-      box.dataset.low = left > 0 && left < 8000 ? '1' : '';
+      box.dataset.low = left > 0 && left < 6000 ? '1' : '';
       if (left <= 0) {
         stopTimer();
         box.dataset.done = '1';
@@ -1641,19 +1831,145 @@ const Engine = (() => {
     step();
     tick = setInterval(step, 250);
   }
+  function timeFor(p, tryNo) {
+    if (p.type === 'open') return tryNo ? 20000 : 30000;
+    if (p.type === 'number') return 20000;
+    return 15000;
+  }
+
+  /* ---------- Question controls ---------- */
+  function setHint(text, warn) {
+    const h = $('pHint');
+    h.textContent = text || '';
+    h.classList.toggle('warn', !!warn);
+  }
+  function buildControls(p, value, locked, disabledSet) {
+    const box = $('pControls');
+    box.replaceChildren();
+    $('pCounter').textContent = '';
+    multiSel = 0;
+    const mkBtn = (cls, label, v) => {
+      const b = el('button', cls, label);
+      b.type = 'button';
+      b.dataset.v = String(v);
+      b.setAttribute('aria-pressed', String(value === v));
+      if (disabledSet && disabledSet.has(v)) { b.disabled = true; b.classList.add('wrong'); }
+      b.addEventListener('click', () => pickValue(v));
+      return b;
+    };
+    if (p.type === 'open') {
+      const input = el('input');
+      input.type = 'text';
+      input.id = 'pInput';
+      input.maxLength = E.MAX_CHARS;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.setAttribute('autocapitalize', 'sentences');
+      input.setAttribute('autocorrect', 'off');
+      input.setAttribute('enterkeyhint', 'go');
+      input.setAttribute('aria-labelledby', 'pText');
+      input.placeholder = S.mode === 'lock' ? (p.ph || '') : 'Your guess';
+      input.value = typeof value === 'string' ? value : '';
+      input.addEventListener('input', updateOpenHint);
+      box.append(input);
+      updateOpenHint();
+    } else if (p.type === 'number') {
+      const row = el('div', 'numrow');
+      const input = el('input');
+      input.type = 'text';
+      input.id = 'pNum';
+      input.setAttribute('inputmode', 'numeric');
+      input.setAttribute('pattern', '[0-9]*');
+      input.setAttribute('enterkeyhint', 'go');
+      input.setAttribute('aria-labelledby', 'pText');
+      input.autocomplete = 'off';
+      input.maxLength = 6;
+      input.placeholder = '?';
+      input.value = Number.isInteger(value) ? String(value) : '';
+      input.addEventListener('input', () => { input.value = input.value.replace(/[^0-9]/g, ''); setHint(E.rangeLabel(p)); });
+      const unit = { level: 'level', '%': '%', clock: 'o’clock', '': '' }[p.unit];
+      row.append(input, el('span', 'unit', unit != null ? unit : p.unit));
+      box.append(row);
+      setHint(E.rangeLabel(p));
+    } else if (p.type === 'scale') {
+      const grid = el('div', 'scale');
+      grid.setAttribute('role', 'group');
+      grid.setAttribute('aria-label', `1 is ${p.lo}, 5 is ${p.hi}`);
+      for (let v = 1; v <= 5; v++) grid.append(mkBtn('', String(v), v));
+      const ends = el('div', 'scale-ends');
+      ends.append(el('span', '', `1 · ${p.lo}`), el('span', '', `5 · ${p.hi}`));
+      box.append(grid, ends);
+    } else if (p.type === 'yesno') {
+      const row = el('div', 'yn');
+      row.append(mkBtn('', 'Yes', 1), mkBtn('', 'No', 0));
+      box.append(row);
+    } else if (p.type === 'choice') {
+      const list = el('div', 'opts');
+      p.options.forEach((o, i) => list.append(mkBtn('', o, i)));
+      box.append(list);
+    } else if (p.type === 'multi') {
+      const grid = el('div', 'chips');
+      multiSel = Number.isInteger(value) ? value : 0;
+      p.options.forEach((o, i) => {
+        const b = el('button', '', o);
+        b.type = 'button';
+        b.setAttribute('aria-pressed', String(!!(multiSel & (1 << i))));
+        b.addEventListener('click', () => {
+          const bit = 1 << i;
+          if (multiSel & bit) multiSel &= ~bit;
+          else if (E.bits(multiSel) < p.pick) multiSel |= bit;
+          else { setHint(`Up to ${p.pick}. Untick one first.`, true); return; }
+          b.setAttribute('aria-pressed', String(!!(multiSel & bit)));
+          setHint(`${E.bits(multiSel)} of ${p.pick} picked`);
+        });
+        grid.append(b);
+      });
+      box.append(grid);
+      setHint(`Pick up to ${p.pick}`);
+    }
+    // Typed answers submit with the main button; tap answers submit on tap.
+    const typed = p.type === 'open' || p.type === 'number' || p.type === 'multi';
+    $('pNext').hidden = !typed && S.mode !== 'lock';
+    if (locked) box.querySelectorAll('button, input').forEach(n => { n.disabled = true; });
+  }
+  function updateOpenHint() {
+    const input = $('pInput');
+    if (!input) return;
+    const v = input.value;
+    const c = $('pCounter');
+    c.textContent = `${v.length}/${E.MAX_CHARS}`;
+    c.classList.toggle('full', v.length >= E.MAX_CHARS);
+    if (S.mode === 'lock' && v.trim() && E.isForeign(v)) setHint('Crits only count for English answers.', true);
+    else if (S.mode === 'lock') setHint('One short sentence. First thought wins.');
+    else setHint('');
+  }
+  function readControl(p) {
+    if (p.type === 'open') { const i = $('pInput'); return i ? E.cleanAnswer(i.value) : ''; }
+    if (p.type === 'number') {
+      const i = $('pNum');
+      const t = i ? i.value.trim() : '';
+      return /^\d+$/.test(t) ? parseInt(t, 10) : null;
+    }
+    if (p.type === 'multi') return multiSel || null;
+    return null;
+  }
+  function problemFor(p) {
+    if (p.type === 'open') return 'Write something. Gut answers score best.';
+    if (p.type === 'number') return `Enter a number: ${E.rangeLabel(p)}.`;
+    if (p.type === 'multi') return 'Pick at least one.';
+    return 'Tap an answer.';
+  }
 
   /* ---------- Prompt screen ---------- */
-  function promptsFor(day) { return E.setFor(day); }
   function renderGems() {
-    const n = E.PER_DAY;
     const gems = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < E.PER_DAY; i++) {
       const g = el('span', 'gem');
       if (S.mode === 'lock') {
-        if (i < S.idx || (S.answers[i] && i !== S.idx)) g.classList.add('done');
-      } else if (RES[i]) {
-        const pts = promptPoints(i);
-        if (pts > 0) g.dataset.q = E.tierFor(pts, E.PROMPT_POINTS).key;
+        if (S.answers[i] != null && i !== S.idx) g.classList.add('done');
+      } else if (S.g[i] && S.g[i].done) {
+        const r = evalQ(i);
+        if (r.points > 0) g.dataset.q = E.tierFor(r.points, r.max).key;
         else g.classList.add('zero');
       }
       if (i === S.idx) g.classList.add('now');
@@ -1662,45 +1978,59 @@ const Engine = (() => {
     $('pGems').replaceChildren(...gems);
   }
   function renderPrompt() {
-    const prompts = promptsFor(S.day);
-    const p = prompts[S.idx];
+    const set = setOf(S.day);
+    const p = set[S.idx];
     const lock = S.mode === 'lock';
     const name = LINK ? LINK.name : '';
-    $('pForm').hidden = false;
-    $('pReveal').hidden = true;
-    $('pTimer').hidden = false;
     $('pPreview').hidden = S.mode !== 'preview';
-    $('pEyebrow').textContent = `Soulbound #${S.day}`;
+    $('pEyebrow').textContent = `Soulbound #${S.day} · ${TYPE_LABEL[p.type]}`;
     $('pCount').textContent = `${S.idx + 1} / ${E.PER_DAY}`;
     $('pAsker').hidden = lock;
-    $('pAsker').textContent = `What did ${name} write?`;
-    $('pText').textContent = p.q;
-    const input = $('pInput');
-    input.value = lock ? (S.answers[S.idx] || '') : '';
-    input.placeholder = lock ? p.ph : `Guess ${name}’s words`;
-    $('pLabel').textContent = lock ? 'Your answer' : `Your guess at ${name}’s answer`;
+    $('pAsker').textContent = `Guess ${name}’s answer`;
+    $('pText').textContent = lock ? p.q : E.qFor(p, name);
     $('pBack').hidden = !lock || S.idx === 0;
-    $('pNext').textContent = lock ? (S.idx === E.PER_DAY - 1 ? 'Lock in' : 'Next') : 'Strike';
-    updateInputHint();
-    renderGems();
-    show('prompt', null, lock ? 'Lock in' : `Cracking ${name}`);
-    try { input.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
-    if (lock) startTimer(TIMER_MS, true, () => { setHint('Time’s up. Trust your gut and lock it.', true); });
-    else startTimer(TIMER_MS, false, () => submitCrack(true));
+    $('pSkip').hidden = true;
+    $('pNextQ').hidden = true;
+    $('pForm').hidden = false;
+    setHint('');
+    if (lock) {
+      $('pResult').hidden = true;
+      $('pRule').textContent = lockRule(p);
+      buildControls(p, S.answers[S.idx], false);
+      $('pNext').textContent = S.idx === E.PER_DAY - 1 ? 'Lock in' : 'Next';
+      $('pNext').hidden = false;
+      renderGems();
+      show('prompt', null, 'Lock in');
+      focusControl();
+      startTimer(timeFor(p, 0) + (p.type === 'open' ? 0 : 5000), true, () => setHint('Time’s up. Trust your gut.', true));
+      return;
+    }
+    show('prompt', null, `Cracking ${name}`);
+    paintCrackState();
   }
-  function setHint(text, warn) {
-    const h = $('pHint');
-    h.textContent = text;
-    h.classList.toggle('warn', !!warn);
+  function lockRule(p) {
+    if (p.type === 'open') return 'Friends get three tries to guess your words.';
+    if (p.type === 'number') return 'A whole number. Friends score for getting close.';
+    if (p.type === 'scale') return 'Tap one. Friends score for exact, half for one off.';
+    if (p.type === 'multi') return `Pick up to ${p.pick}. Friends score for every match.`;
+    return 'Tap your answer.';
   }
-  function updateInputHint() {
-    const v = $('pInput').value;
-    const c = $('pCounter');
-    c.textContent = `${v.length}/${E.MAX_CHARS}`;
-    c.classList.toggle('full', v.length >= E.MAX_CHARS);
-    if (S.mode === 'lock' && v.trim() && E.isForeign(v)) setHint('Crits only count for English answers.', true);
-    else if (S.mode === 'lock') setHint('One short sentence. First thought wins.');
-    else setHint('Same words hit. Rare shared words crit.');
+  function crackRule(p, st) {
+    const n = st.tries.length;
+    if (p.type === 'open') {
+      if (!n) return 'Three tries. Words you hit show up in their answer.';
+      return `Try ${n + 1} of 3 · new hits earn ${Math.round(E.TRY_FACTORS[n] * 100)}%. Fill in the hidden words.`;
+    }
+    if (p.type === 'number') return `Points for getting close · ${E.rangeLabel(p)}`;
+    if (p.type === 'scale') return `Exact is full points, one off is half.`;
+    if (p.type === 'choice') return n ? (st.tries[n - 1] == null ? 'Out of time. One more try for 40%.' : 'Not that one. One more try for 40%.') : 'Two tries. The second earns 40%.';
+    if (p.type === 'multi') return `Pick up to ${p.pick}. Points for every match.`;
+    return 'Quick one.';
+  }
+  function focusControl() {
+    // Typed answers get the cursor; tap answers focus the question, so no option looks pre-picked.
+    const f = $('pInput') || $('pNum') || $('pText');
+    if (f) { try { f.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
   }
 
   /* ---------- Lock in ---------- */
@@ -1708,21 +2038,34 @@ const Engine = (() => {
     const d = today();
     if (getMine()[d]) { renderLockedFromMine(d); return; }
     if (S.pending && S.pending.day === d && !getMe()) {
-      // Answers are done; only the name was missing.
       Object.assign(S, { mode: 'lock', day: d, idx: E.PER_DAY - 1, answers: S.pending.answers.slice() });
       openClaim('lock');
       return;
     }
-    Object.assign(S, { mode: 'lock', day: d, idx: 0, answers: new Array(E.PER_DAY).fill('') });
+    Object.assign(S, { mode: 'lock', day: d, idx: 0, answers: new Array(E.PER_DAY).fill(null) });
     LINK = null;
     clearHash();
     track('lock_start', { from });
     renderPrompt();
   }
+  function pickValue(v) {
+    const p = setOf(S.day)[S.idx];
+    if (S.view !== 'prompt') return;
+    if (S.mode === 'lock') {
+      S.answers[S.idx] = v;
+      $('pControls').querySelectorAll('button[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(v))));
+      setTimeout(() => { if (S.view === 'prompt' && S.mode === 'lock' && setOf(S.day)[S.idx] === p) advanceLock(); }, 220);
+    } else crackTry(v, false);
+  }
   function submitLock() {
-    const v = E.cleanAnswer($('pInput').value);
-    if (!/[\p{L}\p{N}]/u.test(v)) { setHint('Write something. Gut answers score best.', true); $('pInput').focus(); return; }
+    const p = setOf(S.day)[S.idx];
+    let v = readControl(p);
+    if (v == null && (p.type === 'scale' || p.type === 'yesno' || p.type === 'choice')) v = S.answers[S.idx];
+    if (v == null || !E.validAnswer(p, v)) { setHint(problemFor(p), true); focusControl(); return; }
     S.answers[S.idx] = v;
+    advanceLock();
+  }
+  function advanceLock() {
     if (S.idx < E.PER_DAY - 1) { S.idx += 1; renderPrompt(); return; }
     stopTimer();
     if (!getMe()) { S.pending = { day: S.day, answers: S.answers.slice() }; openClaim('lock'); return; }
@@ -1733,7 +2076,7 @@ const Engine = (() => {
     const code = E.encodeLink({ handle: me.handle, name: me.name, day: S.day, answers: S.answers });
     const mine = getMine();
     mine[S.day] = { code, answers: S.answers.slice(), ts: Date.now() };
-    store.set('sb_mine', mine);
+    store.set(KEY.mine, mine);
     S.pending = null;
     track('lock_done', { day: S.day, asked: !!S.askFrom });
     renderLocked(S.day, code, S.answers);
@@ -1757,10 +2100,10 @@ const Engine = (() => {
       ? `${ask}, I locked in Soulbound #${day}. Crack my mind: ${link}`
       : `I locked in Soulbound #${day}. Crack my mind: ${link}`;
     $('lockedState').textContent = '';
-    const prompts = promptsFor(day);
+    const set = setOf(day);
     $('lockedAnswers').replaceChildren(...answers.map((a, i) => {
       const li = el('li');
-      li.append(el('div', 'qt', prompts[i].q), el('div', 'pk', a));
+      li.append(el('div', 'qt', set[i].q), el('div', 'pk', E.fmtAnswer(set[i], a)));
       return li;
     }));
     setHash(`${me.handle}-${day}-${code}`);
@@ -1779,17 +2122,15 @@ const Engine = (() => {
     show('claim', 'claimInput', 'Your name');
   }
   function updateClaimHint() {
-    const name = E.cleanName($('claimInput').value);
-    const h = E.slug(name);
+    const h = E.slug(E.cleanName($('claimInput').value));
     $('claimHint').textContent = h ? `Your link: …#${h}-${S.day}-…` : 'Letters and numbers. Your link starts with it.';
   }
   function claimName(raw) {
-    // Returns an error message, or '' after saving.
     const name = E.cleanName(raw);
     const handle = E.slug(name);
     const problem = name ? E.handleProblem(handle) : 'Type a name first.';
     if (problem) return problem;
-    store.set('sb_me', { handle, name, since: Date.now() });
+    store.set(KEY.me, { handle, name, since: Date.now() });
     track('claim', { len: handle.length });
     return '';
   }
@@ -1817,26 +2158,26 @@ const Engine = (() => {
     $('invalidWhy').textContent = why || 'It may have been cut off when it was copied. Ask for it again, or lock in your own.';
     show('invalid', 'invalidTitle', 'Broken link');
   }
-  function decodeFor(handle, day, code) {
-    const link = E.decodeLink(code);
-    if (link.handle !== handle || link.day !== day) throw new Error('mismatch');
-    return link;
-  }
+  const OLD_LINK = 'That link is from the earlier 5-question version, so it can’t be cracked anymore. Lock in today’s 8 and send a fresh link.';
   function loadLink(link, code) {
     LINK = link;
     S.code = code;
-    const prompts = promptsFor(link.day);
-    AN = link.answers.map((a, i) => E.analyze(a, prompts[i]));
-    RES = [];
+    const set = setOf(link.day);
+    AN = link.answers.map((a, i) => (set[i].type === 'open' ? E.analyze(a, set[i]) : null));
   }
   function openLink(handle, day, code) {
     let link;
-    try { link = decodeFor(handle, day, code); } catch (e) { showInvalid(); return; }
+    try {
+      link = E.decodeLink(code);
+      if (link.handle !== handle || link.day !== day) throw new Error('mismatch');
+    } catch (e) {
+      showInvalid(e && e.ver === 3 ? OLD_LINK : '');
+      return;
+    }
     const me = getMe();
     if (me && me.handle === link.handle) {
-      // Your own link: adopt it on this device and show the share screen.
       const mine = getMine();
-      if (!mine[day]) { mine[day] = { code, answers: link.answers, ts: Date.now() }; store.set('sb_mine', mine); }
+      if (!mine[day]) { mine[day] = { code, answers: link.answers, ts: Date.now() }; store.set(KEY.mine, mine); }
       S.askFrom = '';
       renderLocked(day, code, link.answers);
       return;
@@ -1847,17 +2188,16 @@ const Engine = (() => {
     S.askFrom = '';
     const rec = getReads()[readKey(handle, day, code)];
     track('crack_open', { again: !!rec });
-    if (rec) {
-      S.guesses = rec.guesses.slice();
-      S.bonus = rec.bonus || {};
-      RES = S.guesses.map((g, i) => E.crack(AN[i], g));
-      if (rec.done) { renderResult(); return; }
-      S.idx = S.guesses.length;
-      S.revealed = false;
+    if (rec && Array.isArray(rec.g)) {
+      S.g = rec.g.map(x => ({ tries: Array.isArray(x && x.tries) ? x.tries.slice() : [], done: !!(x && x.done) }));
+      while (S.g.length < E.PER_DAY) S.g.push({ tries: [], done: false });
+      if (rec.done || S.g.every(x => x.done)) { renderResult(); return; }
+      S.idx = S.g.findIndex(x => !x.done);
       renderPrompt();
       return;
     }
-    Object.assign(S, { guesses: [], bonus: {}, idx: 0, revealed: false });
+    S.g = Array.from({ length: E.PER_DAY }, () => ({ tries: [], done: false }));
+    S.idx = 0;
     renderIntro();
   }
   function renderIntro() {
@@ -1871,163 +2211,271 @@ const Engine = (() => {
     const reads = getReads();
     const key = readKey(LINK.handle, LINK.day, S.code);
     const total = totalPoints();
-    reads[key] = {
-      handle: LINK.handle, name: LINK.name, day: LINK.day, code: S.code,
-      guesses: S.guesses.slice(), bonus: S.bonus, total, done: !!done || !!(reads[key] && reads[key].done), ts: Date.now()
-    };
-    store.set('sb_reads', reads);
+    const wasDone = !!(reads[key] && reads[key].done);
+    reads[key] = { handle: LINK.handle, name: LINK.name, day: LINK.day, code: S.code, g: S.g, total, done: !!done || wasDone, ts: Date.now() };
+    store.set(KEY.reads, reads);
     if (reads[key].done) {
       const me = getMe();
       const boards = getBoards();
       const rows = (boards[key] || []).filter(r => !r.self);
       rows.push({ name: me ? me.name : 'You', total, self: true, ts: Date.now() });
       boards[key] = rows;
-      store.set('sb_board', boards);
+      store.set(KEY.board, boards);
     }
   }
 
   /* ---------- Cracking ---------- */
+  function evalQ(i) {
+    const p = setOf(LINK.day)[i];
+    const a = LINK.answers[i];
+    const st = S.g[i] || { tries: [], done: false };
+    if (p.type === 'open') {
+      const so = E.scoreOpen(AN[i], st.tries);
+      return { p, a, st, open: so, points: so.points, max: E.PROMPT_POINTS };
+    }
+    const sc = E.scoreSimple(p, a, st.tries);
+    return { p, a, st, points: sc.points, max: sc.max, c: sc.c };
+  }
+  function canRetry(i) {
+    const r = evalQ(i);
+    if (r.st.done || !r.st.tries.length) return false;
+    if (r.p.type === 'open') return r.st.tries.length < 3 && r.open.remaining > 0 && !r.open.perfect;
+    if (r.p.type === 'choice') return r.st.tries.length < 2 && r.st.tries[r.st.tries.length - 1] !== r.a;
+    return false;
+  }
+  function totalPoints() {
+    let t = 0;
+    for (let i = 0; i < E.PER_DAY; i++) if (S.g[i] && S.g[i].tries.length) t += evalQ(i).points;
+    return Math.min(E.MAX_POINTS, t);
+  }
   function startCrack(preview) {
-    Object.assign(S, { mode: preview ? 'preview' : 'crack', idx: 0, guesses: [], bonus: {}, revealed: false });
-    RES = [];
+    Object.assign(S, { mode: preview ? 'preview' : 'crack', idx: 0, g: Array.from({ length: E.PER_DAY }, () => ({ tries: [], done: false })) });
     track('crack_start', { preview: !!preview });
     if (!preview) saveRead(false);
     renderPrompt();
   }
-  function submitCrack(timedOut) {
-    if (S.view !== 'prompt' || S.mode === 'lock' || S.revealed) return;
+  function crackTry(v, timedOut) {
+    if (S.view !== 'prompt' || S.mode === 'lock') return;
+    const st = S.g[S.idx];
+    if (!st || st.done) return;
+    const p = setOf(LINK.day)[S.idx];
     stopTimer();
-    const v = E.cleanAnswer($('pInput').value);
-    S.guesses[S.idx] = v;
-    RES[S.idx] = E.crack(AN[S.idx], v);
-    S.revealed = true;
+    if (p.type === 'open') st.tries.push(typeof v === 'string' ? v : '');
+    else st.tries.push(v == null ? null : v);
+    if (!canRetry(S.idx)) st.done = true;
     saveRead(false);
-    track('crack_prompt', { i: S.idx, points: RES[S.idx].points, timedOut: !!timedOut });
-    renderReveal();
+    track('crack_try', { q: S.idx, type: p.type, n: st.tries.length, timedOut: !!timedOut });
+    paintCrackState(true);
   }
-  function promptPoints(i) {
-    const base = RES[i] ? RES[i].points : 0;
-    const b = S.bonus[i] || {};
-    return base + Object.values(b).reduce((a, x) => a + (x.pts || 0), 0);
+  function skipRest() {
+    const st = S.g[S.idx];
+    if (!st || st.done) return;
+    st.done = true;
+    stopTimer();
+    saveRead(false);
+    paintCrackState(true);
   }
-  function totalPoints() {
-    let t = 0;
-    for (let i = 0; i < E.PER_DAY; i++) t += promptPoints(i);
-    return Math.min(E.MAX_POINTS, t);
-  }
-  function mainPoints() { return RES.reduce((a, r) => a + (r ? r.points : 0), 0); }
-  function bonusPoints() { return totalPoints() - mainPoints(); }
-
-  // Paint the creator's answer: words you hit in their damage colour, the rest as blocks sized by letters.
-  function paintAnswer(node, an, res, opts = {}) {
-    node.replaceChildren();
-    const text = an.text;
-    const bonus = opts.bonus || {};
-    let pos = 0;
-    for (const sg of an.segs) {
-      if (sg.s < pos) continue;
-      if (sg.s > pos) node.append(text.slice(pos, sg.s));
-      const word = text.slice(sg.s, sg.e);
-      if (sg.ci < 0) { node.append(el('span', 'filler', word)); pos = sg.e; continue; }
-      const c = an.content[sg.ci];
-      const h = res && res.hits[sg.ci];
-      const b = bonus[sg.ci];
-      if (h) {
-        const span = el('span', `w ${h.school}${h.crit ? ' crit' : ''}`, word);
-        node.append(span);
-      } else if (b && b.pts) {
-        node.append(el('span', 'w bonus', word));
-      } else if (opts.reveal) {
-        node.append(el('span', 'w missed', word));
-      } else if (opts.input && sg.s === c.first[0] && !(b && b.tries >= 2)) {
-        node.append(opts.input(sg.ci, c, b));
-        pos = c.first[1];
-        continue;
-      } else {
-        const n = (word.match(/[\p{L}\p{N}]/gu) || []).length || word.length;
-        const blk = el('span', 'blk' + (b && b.tries >= 2 ? ' sealed' : ''));
-        blk.style.setProperty('--n', n);
-        blk.setAttribute('role', 'img');
-        blk.setAttribute('aria-label', `hidden word, ${n} letters`);
-        node.append(blk);
-      }
-      pos = sg.e;
-    }
-    if (pos < text.length) node.append(text.slice(pos));
-  }
-  function logLines(an, res) {
-    const lines = [];
-    const hits = res.hits.map((h, ci) => (h ? { ...h, ci } : null)).filter(Boolean).sort((a, b) => b.raw - a.raw);
-    for (const h of hits) {
-      const verb = h.crit ? 'crits' : h.how === 'typo' ? 'glances' : 'hits';
-      const school = SCHOOL[h.school];
-      let t = `Your “${h.guess}” ${verb} for ${fmt(h.raw)}${school ? ' ' + school : ''}${h.crit ? '!' : '.'}`;
-      if (h.q < 1 && h.how !== 'typo') t += ` (${Math.round((1 - h.q) * 100)}% resisted)`;
-      lines.push({ cls: h.school + (h.crit ? ' crit' : ''), t });
-    }
-    for (const m of res.misses) lines.push({ cls: 'miss', t: `Your “${m}” missed.` });
-    const dodged = res.hits.filter(h => !h).length;
-    if (res.empty) lines.push({ cls: 'miss', t: 'Too slow. Nothing landed.' });
-    if (dodged && hits.length) lines.push({ cls: 'dodge', t: `${dodged} ${dodged === 1 ? 'word' : 'words'} dodged.` });
-    else if (dodged && !res.empty) lines.push({ cls: 'dodge', t: 'Every word dodged.' });
-    if (res.penalty < 1) lines.push({ cls: 'pen', t: `Spread too thin: −${Math.round((1 - res.penalty) * 100)}% for extra words.` });
-    return lines;
-  }
-  function renderReveal() {
+  function paintCrackState(afterTry) {
     const i = S.idx;
-    const an = AN[i], res = RES[i];
-    const past = LINK.day < today();
-    const prompts = promptsFor(S.day);
-    $('pForm').hidden = true;
-    $('pReveal').hidden = false;
-    $('pTimer').hidden = true;
-    $('rvWho').textContent = `${LINK.name} wrote`;
-    $('rvQ').textContent = `${i + 1}. ${prompts[i].q}`;
-    $('rvScore').replaceChildren(document.createTextNode(fmt(res.points) + ' '), el('span', 'of', `/ ${fmt(E.PROMPT_POINTS)}`));
-    paintAnswer($('rvAnswer'), an, res, { reveal: past });
-    const tags = [];
-    if (res.perfect) tags.push(el('span', 'tag perfect', 'Perfect read'));
-    if (an.foreign) tags.push(el('span', 'tag lang', 'Not English: plain hits only'));
-    $('rvTags').replaceChildren(...tags);
-    $('rvTags').hidden = !tags.length;
-    const you = $('rvYou');
-    you.replaceChildren();
-    if (S.guesses[i]) you.append('You wrote ', el('b', '', `“${S.guesses[i]}”`));
-    else you.append('You didn’t write anything in time.');
-    const log = $('rvLog');
-    log.replaceChildren(...logLines(an, res).map((l, k) => {
-      const p = el('p', `ln pop ${l.cls}`, l.t);
-      p.style.animationDelay = `${k * 90}ms`;
-      return p;
-    }));
-    $('rvNext').textContent = i < E.PER_DAY - 1 ? 'Next prompt' : 'See result';
-    renderGems();
-    try { $('rvNext').focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    const r = evalQ(i);
+    const p = r.p;
+    const st = r.st;
+    const name = LINK.name;
+    $('pRule').textContent = st.done ? '' : crackRule(p, st);
+    const tried = st.tries.length > 0;
+    $('pResult').hidden = !tried;
+    if (tried) paintResult(r);
+    if (!st.done) {
+      $('pForm').hidden = false;
+      $('pNextQ').hidden = true;
+      const wrong = p.type === 'choice' ? new Set(st.tries.filter(t => t != null)) : null;
+      buildControls(p, null, false, wrong);
+      $('pNext').textContent = p.type === 'multi' ? 'Guess' : 'Strike';
+      $('pSkip').hidden = !(p.type === 'open' && tried);
+      $('pBack').hidden = true;
+      renderGems();
+      if (!afterTry || tried) focusControl();
+      startTimer(timeFor(p, st.tries.length), false, () => crackTry(readControl(p), true));
+    } else {
+      $('pForm').hidden = true;
+      $('pTimer').hidden = true;
+      $('pNextQ').hidden = false;
+      $('pNextQ').textContent = i < E.PER_DAY - 1 ? 'Next question' : 'See result';
+      renderGems();
+      try { $('pNextQ').focus({ preventScroll: true }); } catch (e) { /* ignore */ }
+    }
+    void name;
   }
-  function nextFromReveal() {
+  function nextQuestion() {
     if (S.idx < E.PER_DAY - 1) {
       S.idx += 1;
-      S.revealed = false;
       renderPrompt();
       return;
     }
-    S.revealed = false;
     saveRead(true);
     track('crack_done', { total: totalPoints(), preview: S.mode === 'preview' });
     renderResult();
   }
 
-  /* ---------- Result ---------- */
-  function blanksLeft() {
-    let n = 0;
-    AN.forEach((an, i) => {
-      an.content.forEach((c, ci) => {
-        const b = (S.bonus[i] || {})[ci];
-        if (!(RES[i] && RES[i].hits[ci]) && !(b && (b.pts || b.tries >= 2))) n++;
-      });
-    });
-    return n;
+  /* ---------- Reveals ---------- */
+  function paintAnswer(node, an, hitAt, reveal) {
+    node.replaceChildren();
+    const text = an.text;
+    let pos = 0;
+    for (const sg of an.segs) {
+      if (sg.s < pos) continue;
+      if (sg.s > pos) node.append(text.slice(pos, sg.s));
+      const word = text.slice(sg.s, sg.e);
+      if (sg.ci < 0) node.append(el('span', 'filler', word));
+      else {
+        const h = hitAt[sg.ci];
+        if (h) node.append(el('span', `w ${h.school}${h.crit ? ' crit' : ''}${h.t ? ' late' : ''}`, word));
+        else if (reveal) node.append(el('span', 'w missed', word));
+        else {
+          const n = (word.match(/[\p{L}\p{N}]/gu) || []).length || word.length;
+          const blk = el('span', 'blk');
+          blk.style.setProperty('--n', n);
+          blk.setAttribute('role', 'img');
+          blk.setAttribute('aria-label', `hidden word, ${n} letters`);
+          node.append(blk);
+        }
+      }
+      pos = sg.e;
+    }
+    if (pos < text.length) node.append(text.slice(pos));
   }
+  function openLines(so) {
+    const lines = [];
+    const many = so.steps.length > 1;
+    so.steps.forEach(step => {
+      const tag = many ? `Try ${step.t + 1}: ` : '';
+      const hits = step.hits.map((h, ci) => (h ? { ...h, ci } : null)).filter(Boolean).sort((a, b) => b.raw - a.raw);
+      for (const h of hits) {
+        const pts = Math.round(h.raw * step.penalty * step.factor);
+        const verb = h.crit ? 'crits' : h.how === 'typo' ? 'glances' : 'hits';
+        const school = SCHOOL[h.school];
+        let t = `${tag}Your “${h.guess}” ${verb} for ${fmt(pts)}${school ? ' ' + school : ''}${h.crit ? '!' : '.'}`;
+        const notes = [];
+        if (h.q < 1 && h.how !== 'typo') notes.push(`${Math.round((1 - h.q) * 100)}% resisted`);
+        if (step.factor < 1) notes.push(`${Math.round(step.factor * 100)}% on try ${step.t + 1}`);
+        if (notes.length) t += ` (${notes.join(', ')})`;
+        lines.push({ cls: h.school + (h.crit ? ' crit' : ''), t });
+      }
+      if (step.empty) lines.push({ cls: 'miss', t: `${tag}Nothing landed in time.` });
+      for (const m of step.misses) lines.push({ cls: 'miss', t: `${tag}Your “${m}” missed.` });
+      if (step.penalty < 1) lines.push({ cls: 'pen', t: `${tag}Spread too thin: −${Math.round((1 - step.penalty) * 100)}% for extra words.` });
+    });
+    if (so.remaining) lines.push({ cls: 'dodge', t: `${so.remaining} ${so.remaining === 1 ? 'word' : 'words'} still hidden.` });
+    return lines;
+  }
+  function verdictFor(c) {
+    if (c >= 1) return ['good', 'Exact!'];
+    if (c >= 0.5) return ['mid', 'Close'];
+    if (c > 0) return ['mid', 'Near-ish'];
+    return ['bad', 'Missed'];
+  }
+  function vsBlock(theirLabel, theirVal, yourLabel, yourVal) {
+    const vs = el('div', 'vs');
+    const a = el('div', 'theirs');
+    a.append(el('span', 'label', theirLabel), el('span', 'val', theirVal));
+    const b = el('div', 'yours');
+    b.append(el('span', 'label', yourLabel), el('span', 'val', yourVal));
+    vs.append(a, b);
+    return vs;
+  }
+  function paintResult(r) {
+    const p = r.p, st = r.st, name = LINK.name;
+    const past = LINK.day < today();
+    $('rvWho').textContent = p.type === 'open' ? `${name}’s answer` : st.done ? 'You scored' : 'Not yet';
+    $('rvScore').replaceChildren(document.createTextNode(fmt(r.points) + ' '), el('span', 'of', `/ ${fmt(r.max)}`));
+    const body = $('rvBody');
+    body.replaceChildren();
+    const tags = [];
+    let lines = [];
+    if (p.type === 'open') {
+      const ans = el('p', 'redacted');
+      paintAnswer(ans, AN[S.idx], r.open.hitAt, st.done && past);
+      body.append(ans);
+      if (r.open.perfect) tags.push(el('span', 'tag perfect', 'Perfect read'));
+      if (AN[S.idx].foreign) tags.push(el('span', 'tag lang', 'Not English: plain hits only'));
+      const you = el('p', 'you');
+      const last = st.tries[st.tries.length - 1];
+      if (last) you.append(`Try ${st.tries.length}: `, el('b', '', `“${last}”`));
+      else you.append(`Try ${st.tries.length}: nothing in time.`);
+      body.append(you);
+      lines = openLines(r.open);
+    } else if (p.type === 'choice' && !st.done) {
+      lines = [{ cls: 'miss', t: st.tries[0] == null ? 'Too slow.' : `Not “${p.options[st.tries[0]]}”.` }];
+    } else {
+      const g = st.tries[st.tries.length - 1];
+      const yours = g == null ? 'No answer' : E.fmtAnswer(p, g);
+      if (p.type === 'number') {
+        body.append(vsBlock(name, E.fmtAnswer(p, r.a), 'You', yours));
+        const m = el('div', 'meter');
+        const i = el('i');
+        i.style.setProperty('--w', `${Math.round(r.c * 100)}%`);
+        i.style.setProperty('--mc', r.points > 0 ? `var(--q-${E.tierFor(r.points, r.max).key})` : 'var(--line)');
+        m.append(i);
+        body.append(m);
+        const [cls, word] = verdictFor(r.c);
+        lines = [{ cls: r.c > 0 ? 'fire' + (r.c >= 1 ? ' crit' : '') : 'miss', t: g == null ? 'Too slow. Nothing landed.' : `${word}: ${fmt(r.points)} of ${fmt(r.max)}.` }];
+        void cls;
+      } else if (p.type === 'scale') {
+        const tr = el('div', 'track5');
+        for (let v = 1; v <= 5; v++) {
+          const s = el('span', (v === r.a ? 'theirs ' : '') + (v === g ? 'yours' : ''), String(v));
+          tr.append(s);
+        }
+        const ends = el('div', 'scale-ends');
+        ends.append(el('span', '', `1 · ${p.lo}`), el('span', '', `5 · ${p.hi}`));
+        const legend = el('div', 'legend');
+        const l1 = el('span'); const i1 = el('i'); i1.style.background = 'var(--gold-hi)'; l1.append(i1, `${name}: ${r.a}`);
+        const l2 = el('span'); const i2 = el('i'); i2.style.background = 'var(--dmg-arcane)'; l2.append(i2, `You: ${g == null ? '–' : g}`);
+        legend.append(l1, l2);
+        body.append(tr, ends, legend);
+        lines = [{ cls: r.c >= 1 ? 'arcane crit' : r.c > 0 ? 'arcane' : 'miss', t: g == null ? 'Too slow.' : r.c >= 1 ? `Exact read: ${fmt(r.points)}!` : r.c > 0 ? `One off: ${fmt(r.points)}.` : 'Missed.' }];
+      } else if (p.type === 'yesno') {
+        body.append(vsBlock(name, E.fmtAnswer(p, r.a), 'You', yours));
+        lines = [{ cls: r.c ? 'physical' : 'miss', t: g == null ? 'Too slow.' : r.c ? `Called it: ${fmt(r.points)}.` : 'Wrong call.' }];
+      } else if (p.type === 'choice') {
+        const list = el('div', 'opts');
+        p.options.forEach((o, i) => {
+          const b = el('button', i === r.a ? 'right' : st.tries.includes(i) ? 'wrong' : '', o);
+          b.type = 'button';
+          b.disabled = true;
+          list.append(b);
+        });
+        body.append(list);
+        const firstRight = st.tries[0] === r.a;
+        lines = [{ cls: r.c ? 'physical' + (firstRight ? ' crit' : '') : 'miss', t: r.c ? (firstRight ? `Picked it first try: ${fmt(r.points)}!` : `Got it on the second try: ${fmt(r.points)}.`) : `They picked “${p.options[r.a]}”.` }];
+      } else if (p.type === 'multi') {
+        const grid = el('div', 'chips');
+        const gm = g || 0;
+        p.options.forEach((o, i) => {
+          const bit = 1 << i;
+          const b = el('button', (r.a & bit) && (gm & bit) ? 'right' : (gm & bit) ? 'wrong' : '', o);
+          b.type = 'button';
+          b.disabled = true;
+          if (r.a & bit) b.setAttribute('aria-pressed', 'true');
+          grid.append(b);
+        });
+        const legend = el('div', 'legend');
+        legend.append(el('span', '', `Gold: ${name}’s picks · green outline: you matched · struck: your misses`));
+        body.append(grid, legend);
+        const hits = E.bits(r.a & gm);
+        lines = [{ cls: r.c ? 'physical' + (r.c >= 1 ? ' crit' : '') : 'miss', t: g == null ? 'Too slow.' : `${hits} of ${E.bits(r.a)} matched: ${fmt(r.points)}.` }];
+      }
+    }
+    $('rvTags').replaceChildren(...tags);
+    $('rvTags').hidden = !tags.length;
+    $('rvLog').replaceChildren(...lines.map((l, k) => {
+      const n = el('p', `ln pop ${l.cls}`, l.t);
+      n.style.animationDelay = `${k * 80}ms`;
+      return n;
+    }));
+  }
+
+  /* ---------- Result ---------- */
   function crackerName() { const me = getMe(); return me ? me.name : 'You'; }
   function buildTooltip(card, t, a, b, total) {
     card.style.setProperty('--rarity', `var(--q-${t.key})`);
@@ -2037,8 +2485,8 @@ const Engine = (() => {
     gems.setAttribute('aria-hidden', 'true');
     for (let i = 0; i < E.PER_DAY; i++) {
       const g = el('span', 'gem');
-      const pts = promptPoints(i);
-      if (pts > 0) g.dataset.q = E.tierFor(pts, E.PROMPT_POINTS).key;
+      const r = evalQ(i);
+      if (r.points > 0) g.dataset.q = E.tierFor(r.points, r.max).key;
       else g.classList.add('zero');
       gems.append(g);
     }
@@ -2055,8 +2503,12 @@ const Engine = (() => {
   function resultText() {
     const total = totalPoints();
     const t = E.tierFor(total);
-    const squares = Array.from({ length: E.PER_DAY }, (_, i) => E.squareFor(promptPoints(i))).join('');
+    const squares = Array.from({ length: E.PER_DAY }, (_, i) => { const r = evalQ(i); return E.squareFor(r.points, r.max); }).join('');
     return `Soulbound #${LINK.day} · I cracked ${LINK.name}: ${fmt(total)} / ${fmt(E.MAX_POINTS)} ${t.emoji}\n${squares}\nThink you know ${LINK.name} better? ${linkFor(LINK.handle, LINK.day, S.code)}`;
+  }
+  function triesText(p, st) {
+    if (!st.tries.length) return 'nothing';
+    return st.tries.map(t => (t == null || t === '' ? '(nothing)' : p.type === 'open' ? `“${t}”` : E.fmtAnswer(p, t))).join(', then ');
   }
   function renderResult() {
     const total = totalPoints();
@@ -2068,48 +2520,41 @@ const Engine = (() => {
     $('resultEyebrow').textContent = `Soulbound #${LINK.day} · ${t.name} bond`;
     $('resultTitle').textContent = total > 0 ? `You cracked ${LINK.name}` : `${LINK.name}’s mind stayed shut`;
     $('resultPoints').textContent = fmt(total);
-    const bp = bonusPoints();
-    $('resultBonusLine').hidden = !bp;
-    $('resultBonusLine').textContent = `Includes +${fmt(bp)} from the bonus round.`;
     const card = $('resultCard');
     buildTooltip(card, t, crackerName(), LINK.name, total);
     card.classList.remove('drop');
     void card.offsetWidth;
     card.classList.add('drop');
-
-    const left = past ? 0 : blanksLeft();
-    $('bonusCta').hidden = !left;
-    $('bonusCtaText').textContent = `${left} ${left === 1 ? 'word is' : 'words are'} still hidden. Two tries each, half points.`;
-
     const me = getMe();
     $('boardForm').hidden = preview || !!me;
     $('boardErr').hidden = true;
     renderBoard();
     $('boardBox').hidden = preview;
-
     $('resultText').textContent = resultText();
     $('resultState').textContent = '';
     $('resultPreview').hidden = !preview;
-
-    const prompts = promptsFor(LINK.day);
-    $('resultList').replaceChildren(...AN.map((an, i) => {
+    const set = setOf(LINK.day);
+    $('resultList').replaceChildren(...set.map((p, i) => {
+      const r = evalQ(i);
       const li = el('li');
-      const ans = el('p', 'redacted');
-      paintAnswer(ans, an, RES[i], { reveal: past || preview, bonus: S.bonus[i] });
-      li.append(
-        el('div', 'qt', prompts[i].q),
-        ans,
-        el('div', 'pk', S.guesses[i] ? `You: ${S.guesses[i]}` : 'You: (nothing in time)'),
-        el('div', 'pts', `${fmt(promptPoints(i))} / ${fmt(E.PROMPT_POINTS)}`)
-      );
+      li.append(el('div', 'qt', E.qFor(p, LINK.name)));
+      if (p.type === 'open') {
+        const ans = el('p', 'redacted');
+        paintAnswer(ans, AN[i], r.open.hitAt, past || preview);
+        li.append(ans);
+      } else {
+        const line = el('div', 'typed');
+        line.append(`${LINK.name}: `, el('b', '', E.fmtAnswer(p, r.a)));
+        li.append(line);
+      }
+      li.append(el('div', 'typed', `You: ${triesText(p, r.st)}`), el('div', 'pts', `${fmt(r.points)} / ${fmt(r.max)}`));
       return li;
     }));
-
     const lockedToday = !!getMine()[today()];
     $('turnBox').hidden = preview;
     $('turnTitle').textContent = lockedToday ? 'Your link is ready' : 'Your turn';
-    $('turnText').textContent = lockedToday ? `Send it to ${LINK.name} and see if they crack you back.` : `Lock in today’s 5 and see if ${LINK.name} can crack you.`;
-    $('yourTurn').textContent = lockedToday ? 'Your link' : 'Lock in today’s 5';
+    $('turnText').textContent = lockedToday ? `Send it to ${LINK.name} and see if they crack you back.` : `Lock in today’s 8 and see if ${LINK.name} can crack you.`;
+    $('yourTurn').textContent = lockedToday ? 'Your link' : 'Lock in today’s 8';
     setHash(`${LINK.handle}-${LINK.day}-${S.code}`);
     if (preview) ownHash = location.hash.slice(1);
     show('result', 'resultTitle', `${LINK.name} · #${LINK.day}`);
@@ -2122,92 +2567,10 @@ const Engine = (() => {
       const li = el('li', 'brow');
       li.style.setProperty('--rarity', `var(--q-${tt.key})`);
       const left = el('div');
-      left.append(el('div', 'bname', r.self ? `${crackerName()}` : r.name), el('div', 'bsub', tt.name));
+      left.append(el('div', 'bname', r.self ? crackerName() : r.name), el('div', 'bsub', tt.name));
       li.append(left, el('div', 'bscore', fmt(r.total)));
       return li;
     }));
-  }
-
-  /* ---------- Bonus round ---------- */
-  function renderBonus() {
-    const list = $('bonusList');
-    const prompts = promptsFor(LINK.day);
-    list.replaceChildren();
-    AN.forEach((an, i) => {
-      const open = an.content.some((c, ci) => !(RES[i] && RES[i].hits[ci]));
-      if (!open) return;
-      const f = el('form', 'panel bcard');
-      f.noValidate = true;
-      f.dataset.pi = String(i);
-      f.append(el('p', 'label', `${i + 1} · ${prompts[i].q}`));
-      const p = el('p', 'redacted');
-      f.append(p);
-      const foot = el('div', 'bfoot');
-      const msg = el('p', 'bmsg');
-      msg.id = `bmsg-${i}`;
-      msg.setAttribute('aria-live', 'polite');
-      const btn = el('button', 'btn sm', 'Check');
-      btn.type = 'submit';
-      foot.append(msg, btn);
-      f.append(foot);
-      paintBonusCard(i);
-      f.addEventListener('submit', e => { e.preventDefault(); checkBonus(i); });
-      list.append(f);
-
-      function paintBonusCard(pi) {
-        paintAnswer(p, an, RES[pi], {
-          bonus: S.bonus[pi] || {},
-          input: (ci, c, b) => {
-            const inp = el('input', 'blank' + (b && b.tries ? ' tried' : ''));
-            inp.type = 'text';
-            inp.dataset.ci = String(ci);
-            inp.style.setProperty('--n', Math.max(2, c.letters));
-            inp.maxLength = c.shown.length + 4;
-            inp.placeholder = '·'.repeat(Math.max(2, c.letters));
-            inp.autocomplete = 'off';
-            inp.spellcheck = false;
-            inp.setAttribute('autocapitalize', 'off');
-            inp.setAttribute('autocorrect', 'off');
-            inp.setAttribute('aria-label', `Hidden word, ${c.letters} letters, ${2 - (b ? b.tries : 0)} ${b && b.tries === 1 ? 'try' : 'tries'} left`);
-            return inp;
-          }
-        });
-        const anyOpen = p.querySelector('input.blank');
-        btn.hidden = !anyOpen;
-      }
-      f._repaint = () => paintBonusCard(i);
-    });
-    $('bonusPoints').textContent = `+${fmt(bonusPoints())} bonus`;
-    if (!list.children.length) list.append(el('p', 'muted', 'Nothing left to fill.'));
-  }
-  function checkBonus(i) {
-    const form = $('bonusList').querySelector(`form[data-pi="${i}"]`);
-    if (!form) return;
-    const inputs = Array.from(form.querySelectorAll('input.blank')).filter(x => x.value.trim());
-    const msg = form.querySelector('.bmsg');
-    if (!inputs.length) { msg.className = 'bmsg bad'; msg.textContent = 'Type a guess into a block first.'; return; }
-    const b = S.bonus[i] = S.bonus[i] || {};
-    let gained = 0, missed = 0;
-    for (const inp of inputs) {
-      const ci = +inp.dataset.ci;
-      const cur = b[ci] || { tries: 0 };
-      if (cur.pts || cur.tries >= 2) continue;
-      cur.tries += 1;
-      const r = E.fillBlank(AN[i], ci, inp.value);
-      if (r) { cur.pts = r.pts; cur.q = r.q; gained += r.pts; }
-      else missed += 1;
-      b[ci] = cur;
-    }
-    saveRead(true);
-    track('bonus_check', { gained, missed });
-    form._repaint();
-    msg.className = 'bmsg ' + (gained ? 'good' : 'bad');
-    msg.textContent = gained
-      ? `+${fmt(gained)} bonus${missed ? `. ${missed} still wrong.` : '.'}`
-      : `Not ${inputs.length > 1 ? 'those' : 'it'}. ${form.querySelector('input.blank') ? 'One more try on each.' : 'Sealed until the next set.'}`;
-    $('bonusPoints').textContent = `+${fmt(bonusPoints())} bonus`;
-    const next = form.querySelector('input.blank');
-    if (next) { try { next.focus({ preventScroll: true }); } catch (e) { /* ignore */ } }
   }
 
   /* ---------- Card image ---------- */
@@ -2290,7 +2653,6 @@ const Engine = (() => {
     g.fillStyle = col.muted;
     g.font = '500 42px "Alegreya Sans", system-ui, sans-serif';
     g.fillText(`Soulbound #${LINK.day} · Can you crack their mind?`, P, 282);
-
     const bx = P, bw = W - P * 2, pad = 56, tw = bw - pad * 2;
     const disp = size => `${size}px "Marcellus", Georgia, serif`;
     const items = [];
@@ -2346,14 +2708,14 @@ const Engine = (() => {
         g.fillText(it.right, bx + bw - pad, base);
         g.textAlign = 'left';
       } else if (it.kind === 'gems') {
-        const r = 15, step = 58;
+        const r = 14, step = 52;
         let x = bx + pad + r + 2;
         const cy = y + it.lh / 2;
         for (let i = 0; i < E.PER_DAY; i++) {
-          const pts = promptPoints(i);
-          const gc = pts > 0 ? v('--q-' + E.tierFor(pts, E.PROMPT_POINTS).key) : col.line;
+          const q = evalQ(i);
+          const gc = q.points > 0 ? v('--q-' + E.tierFor(q.points, q.max).key) : col.line;
           diamond(g, x, cy, r);
-          if (pts > 0) { g.fillStyle = gc; g.fill(); }
+          if (q.points > 0) { g.fillStyle = gc; g.fill(); }
           g.lineWidth = 3;
           g.strokeStyle = gc;
           g.stroke();
@@ -2399,30 +2761,31 @@ const Engine = (() => {
       const box = $('profToday');
       box.replaceChildren();
       const cta = el('div', 'cta');
+      const b = el('button', 'btn primary');
+      b.type = 'button';
       if (mine[d]) {
         cta.append(el('h2', '', `Locked in for #${d}`), el('p', 'muted', 'Your link is ready to send.'));
-        const b = el('button', 'btn primary', 'Your link');
-        b.type = 'button';
+        b.textContent = 'Your link';
         b.addEventListener('click', () => { S.askFrom = ''; renderLockedFromMine(d); });
-        cta.append(b);
       } else {
-        cta.append(el('h2', '', `Soulbound #${d} is open`), el('p', 'muted', 'Lock in today’s 5 to get a new link.'));
-        const b = el('button', 'btn primary', 'Lock in today’s 5');
-        b.type = 'button';
+        cta.append(el('h2', '', `Soulbound #${d} is open`), el('p', 'muted', 'Lock in today’s 8 to get a new link.'));
+        b.textContent = 'Lock in today’s 8';
         b.addEventListener('click', () => startLock('profile'));
-        cta.append(b);
       }
+      cta.append(b);
       box.append(cta);
       $('profDays').replaceChildren(...days.map(day => {
         const rec = mine[day];
+        const set = setOf(day);
+        const opens = rec.answers.map((a, i) => (set[i] && set[i].type === 'open' ? a : null)).filter(Boolean);
         const li = el('li', 'brow');
         const left = el('div');
-        left.append(el('div', 'bname', `Soulbound #${day}`), el('div', 'bsub', `${dayDate(day)} · ${rec.answers.map(a => a.length > 18 ? a.slice(0, 17) + '…' : a).join(' · ')}`));
-        const b = el('button', 'btn sm', 'Link');
-        b.type = 'button';
-        b.addEventListener('click', () => { S.askFrom = ''; renderLocked(day, rec.code, rec.answers); });
+        left.append(el('div', 'bname', `Soulbound #${day}`), el('div', 'bsub', `${dayDate(day)} · ${opens.map(a => (a.length > 18 ? a.slice(0, 17) + '…' : a)).join(' · ')}`));
+        const lb = el('button', 'btn sm', 'Link');
+        lb.type = 'button';
+        lb.addEventListener('click', () => { S.askFrom = ''; renderLocked(day, rec.code, rec.answers); });
         li.style.setProperty('--rarity', 'var(--gold-hi)');
-        li.append(left, b);
+        li.append(left, lb);
         return li;
       }));
       $('profDaysEmpty').hidden = !!days.length;
@@ -2457,12 +2820,12 @@ const Engine = (() => {
         return li;
       }));
       $('profHistEmpty').hidden = !!theirs.length;
-      renderPing(handle, name);
+      renderPing(name);
     }
     setHash(handle);
-    show('profile', 'profileTitle', own ? 'Your page' : name);
+    show('profile', 'profileTitle', own ? 'Your page' : $('profileTitle').textContent);
   }
-  function renderPing(handle, name) {
+  function renderPing(name) {
     const me = getMe();
     $('pingNameForm').hidden = !!me;
     $('pingErr').hidden = true;
@@ -2479,8 +2842,7 @@ const Engine = (() => {
     S.askFrom = handle;
     setText('aname', E.cap(handle));
     $('askEyebrow').textContent = `Soulbound #${today()}`;
-    const locked = !!getMine()[today()];
-    $('askGo').textContent = locked ? `Send your link to ${E.cap(handle)}` : 'Lock in today’s 5';
+    $('askGo').textContent = getMine()[today()] ? `Send your link to ${E.cap(handle)}` : 'Lock in today’s 8';
     show('ask', 'askTitle', `${E.cap(handle)} asked`);
   }
 
@@ -2491,7 +2853,7 @@ const Engine = (() => {
       case 'crack': openLink(r.handle, r.day, r.code); return;
       case 'ask': renderAsk(r.handle); return;
       case 'profile': renderProfile(r.handle); return;
-      case 'old': showInvalid('That link is from an older Soulbound test. The game works differently now: lock in today’s 5 and send a new link.'); return;
+      case 'old': showInvalid('That link is from an early Soulbound test. Lock in today’s 8 and send a fresh link.'); return;
       case 'bad': showInvalid(); return;
       default: goHome();
     }
@@ -2519,19 +2881,24 @@ const Engine = (() => {
     route();
   });
 
-  $('pInput').addEventListener('input', updateInputHint);
   $('pForm').addEventListener('submit', e => {
     e.preventDefault();
-    if (S.mode === 'lock') submitLock();
-    else submitCrack(false);
+    if (S.mode === 'lock') { submitLock(); return; }
+    const p = setOf(S.day)[S.idx];
+    const v = readControl(p);
+    if (p.type === 'multi' && !v) { setHint('Pick at least one.', true); return; }
+    crackTry(v, false);
   });
   $('pBack').addEventListener('click', () => {
     if (S.mode !== 'lock' || S.idx === 0) return;
-    S.answers[S.idx] = E.cleanAnswer($('pInput').value);
+    const p = setOf(S.day)[S.idx];
+    const v = readControl(p);
+    if (v != null && E.validAnswer(p, v)) S.answers[S.idx] = v;
     S.idx -= 1;
     renderPrompt();
   });
-  $('rvNext').addEventListener('click', nextFromReveal);
+  $('pSkip').addEventListener('click', skipRest);
+  $('pNextQ').addEventListener('click', nextQuestion);
 
   $('claimInput').addEventListener('input', () => { $('claimErr').hidden = true; updateClaimHint(); });
   $('claimForm').addEventListener('submit', e => {
@@ -2552,18 +2919,15 @@ const Engine = (() => {
     S.day = link.day;
     startCrack(true);
   });
-  $('resultBack').addEventListener('click', backFromPreview);
-  function backFromPreview() {
+  $('resultBack').addEventListener('click', () => {
     const sv = S.saved;
     S.saved = null;
     LINK = null;
     if (sv) { S.askFrom = sv.askFrom || ''; renderLocked(sv.day, sv.code, sv.answers); }
     else goHome();
-  }
+  });
 
   $('introGo').addEventListener('click', () => startCrack(false));
-  $('bonusGo').addEventListener('click', () => { track('bonus_open'); renderBonus(); show('bonus', 'bonusTitle', `Bonus · ${LINK.name}`); });
-  $('bonusDone').addEventListener('click', renderResult);
   $('boardForm').addEventListener('submit', e => {
     e.preventDefault();
     const err = claimName($('boardName').value);
@@ -2622,30 +2986,22 @@ const Engine = (() => {
   setInterval(() => { if (S.view === 'home') renderHome(); }, 30000);
 
   /* ---------- Keep the viewer's place when the page is republished ---------- */
-  try {
-    window.claude?.hot?.snapshot?.(() => {
-      const snap = JSON.parse(JSON.stringify(S));
-      snap.timeLeft = Math.max(0, deadline - Date.now());
-      return snap;
-    });
-  } catch (e) { /* ignore */ }
+  try { window.claude?.hot?.snapshot?.(() => JSON.parse(JSON.stringify(S))); } catch (e) { /* ignore */ }
   function restore(data) {
     if (!data || typeof data !== 'object' || !data.view || data.view === 'home') return false;
-    if (data.mode === 'lock' && data.view === 'prompt' && Array.isArray(data.answers)) {
+    if (data.mode === 'lock' && data.view === 'prompt' && Array.isArray(data.answers) && data.answers.length === E.PER_DAY) {
       Object.assign(S, data);
       renderPrompt();
       return true;
     }
-    if (data.code && (data.mode === 'crack' || data.mode === 'preview') && ['prompt', 'result', 'bonus', 'intro'].includes(data.view)) {
+    if (data.code && (data.mode === 'crack' || data.mode === 'preview') && ['prompt', 'result', 'intro'].includes(data.view)) {
       let link;
       try { link = E.decodeLink(data.code); } catch (e) { return false; }
       Object.assign(S, data);
       loadLink(link, data.code);
-      RES = S.guesses.map((g, i) => E.crack(AN[i], g));
-      if (S.view === 'prompt') {
-        if (S.revealed && RES[S.idx]) renderReveal(); else { S.revealed = false; renderPrompt(); }
-      } else if (S.view === 'result') renderResult();
-      else if (S.view === 'bonus') { renderBonus(); show('bonus', 'bonusTitle'); }
+      if (!Array.isArray(S.g) || S.g.length !== E.PER_DAY) return false;
+      if (S.view === 'prompt') renderPrompt();
+      else if (S.view === 'result') renderResult();
       else renderIntro();
       return true;
     }
