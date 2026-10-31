@@ -1833,7 +1833,7 @@ const Engine = (() => {
   }
   function timeFor(p, tryNo) {
     if (p.type === 'open') return tryNo ? 20000 : 30000;
-    if (p.type === 'number') return 20000;
+    if (p.type === 'number' || p.type === 'multi') return 20000;
     return 15000;
   }
 
