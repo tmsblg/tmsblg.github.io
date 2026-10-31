@@ -66,6 +66,12 @@
   --q-rare: #2e8cf0;
   --q-epic: #a335ee;
   --q-legendary: #ff8000;
+  --rep-neutral: #e0c34a;
+  --rep-friendly: #45c745;
+  --rep-honored: #33cf86;
+  --rep-revered: #2cd3b6;
+  --rep-exalted: #3fe0ea;
+  --rep-msg: #9fa2ff;
   --rarity: var(--q-epic);
 
   --font-logo: "Grenze Gotisch", "Pirata One", Georgia, serif;
@@ -465,6 +471,28 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
 .alist .typed { font-size: 0.95rem; overflow-wrap: anywhere; }
 .alist .typed b { color: var(--gold-hi); font-weight: 700; }
 #rvBody { display: grid; gap: 0.6rem; }
+
+/* Bond: reputation with one person, WoW-style tiers */
+.bond { display: grid; gap: 0.55rem; padding: 0.9rem 1rem; border-radius: 12px; background: var(--ink-2); border: 1px solid var(--line); }
+.bond-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.4rem 0.75rem; flex-wrap: wrap; }
+.bond-head .label { margin: 0; }
+.bond-tier { font: 400 1.3rem/1.1 var(--font-display); color: var(--rep); }
+.repbar { position: relative; height: 1.35rem; border-radius: 4px; background: var(--tt-bg-2); border: 1px solid var(--line); overflow: hidden; }
+.repbar i { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: linear-gradient(180deg, color-mix(in srgb, var(--rep) 75%, #fff), var(--rep) 55%, color-mix(in srgb, var(--rep) 70%, #000)); transition: width 0.9s ease-out; }
+.repbar span { position: relative; display: grid; place-items: center; height: 100%; font: 800 0.78rem/1 var(--font-body); color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; font-variant-numeric: tabular-nums; }
+.bond-line { font-size: var(--fs-small); color: var(--rep-msg); }
+.bond-up { font-weight: 800; color: var(--rep); }
+.bondnote { font-size: var(--fs-small); color: var(--muted); }
+.bondnote b { color: var(--rep); font-weight: 800; }
+.bondrow .bname { color: var(--text); }
+.bondrow .btier { color: var(--rep); font-weight: 800; }
+.bondrow .repbar { height: 0.55rem; margin-top: 0.35rem; }
+.tt-rep { color: var(--rep); }
+[data-tier] { --rep: var(--rep-neutral); }
+[data-tier="friendly"] { --rep: var(--rep-friendly); }
+[data-tier="honored"] { --rep: var(--rep-honored); }
+[data-tier="revered"] { --rep: var(--rep-revered); }
+[data-tier="exalted"] { --rep: var(--rep-exalted); }
 #rvBody .scale-ends { margin-top: -0.3rem; }
 </style>
 </head>
@@ -517,6 +545,7 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
           <li><span><b>Lock in.</b> Eight questions about Forever and your guild: a few written answers, two numbers, two scales and a yes-or-no.</span></li>
           <li><span><b>Send your link.</b> Your guild guesses what you answered.</span></li>
           <li><span><b>Close counts.</b> Three tries on written answers, partial points for near-miss numbers, and rare words you both wrote crit.</span></li>
+          <li><span><b>Build a bond.</b> Crack the same friend day after day to climb from Neutral to Exalted.</span></li>
         </ol>
       </section>
 
@@ -626,6 +655,7 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         <li>Numbers and scales score for getting close.</li>
         <li>Every question is timed, and you get one go per link.</li>
       </ul>
+      <p class="bondnote" id="introBond" data-tier="neutral" hidden></p>
       <p class="note" id="introPast" hidden>This is an older set, so you’ll see <span class="cname">Motsa</span>’s full answers as you go.</p>
       <button class="btn primary block" id="introGo" type="button">Start cracking</button>
     </section>
@@ -639,6 +669,17 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         <p class="bigscore" id="resultBig"><span id="resultPoints">0</span> <span class="of">/ 50,000</span></p>
       </div>
       <div class="tooltip" id="resultCard"></div>
+
+      <section class="bond" id="bondBox" data-tier="neutral" aria-labelledby="bondTitle" hidden>
+        <div class="bond-head">
+          <h2 class="label" id="bondTitle">Bond with <span class="cname">Motsa</span></h2>
+          <span class="bond-tier" id="bondTier">Neutral</span>
+        </div>
+        <div class="repbar" id="bondBar" role="img" aria-label=""><i id="bondFill"></i><span id="bondNums">0 / 500</span></div>
+        <p class="bond-line" id="bondGain"></p>
+        <p class="bond-up" id="bondUp" hidden></p>
+        <p class="hint" id="bondHint"></p>
+      </section>
 
       <form class="cta" id="boardForm" novalidate hidden>
         <h2>Put your name on <span class="cname">Motsa</span>’s board</h2>
@@ -682,6 +723,11 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
       </div>
       <div id="profOwn" class="stack" hidden>
         <div id="profToday"></div>
+        <section class="board" aria-labelledby="profBondsTitle">
+          <div class="board-head"><h2 class="h3" id="profBondsTitle">Your bonds</h2><span class="small muted">this device</span></div>
+          <ol class="brows" id="profBonds"></ol>
+          <p class="hint" id="profBondsEmpty" hidden>Crack a friend’s link to start a bond. Every day in a row adds 10%.</p>
+        </section>
         <section class="board" aria-labelledby="profDaysTitle">
           <h2 class="h3" id="profDaysTitle">Your days</h2>
           <ol class="brows" id="profDays"></ol>
@@ -694,6 +740,14 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
         </section>
       </div>
       <div id="profOther" class="stack" hidden>
+        <section class="bond" id="profBond" data-tier="neutral" aria-labelledby="profBondTitle">
+          <div class="bond-head">
+            <h2 class="label" id="profBondTitle">Your bond with <span class="pname">Motsa</span></h2>
+            <span class="bond-tier" id="profBondTier">Neutral</span>
+          </div>
+          <div class="repbar" id="profBondBar" role="img" aria-label=""><i id="profBondFill"></i><span id="profBondNums">0 / 500</span></div>
+          <p class="hint" id="profBondLine"></p>
+        </section>
         <section class="board" aria-labelledby="profHistTitle">
           <h2 class="h3" id="profHistTitle">Your cracks</h2>
           <ol class="brows" id="profHist"></ol>
@@ -786,7 +840,8 @@ const Engine = (() => {
   const N = (id, q, qc, unit, min, max, close) => ({ id, type: 'number', q, qc, unit, min, max, ...close });
   const S5 = (id, q, qc, lo, hi) => ({ id, type: 'scale', q, qc, lo, hi });
   const YN = (id, q, qc) => ({ id, type: 'yesno', q, qc });
-  const SETS = [
+  // v4 sets (live 2026-10-31). Frozen: v4 links still decode and play these.
+  const SETS_V4 = [
     [
       O('B04', 'What will you tell your boss on launch day?', 'What will {name} tell their boss on launch day?', 'The excuse', 'sick ill flu nothing doctor dentist family emergency remote home vacation holiday headache migraine'),
       N('B18', 'How many minutes will you spend in the character creator?', 'How many minutes will {name} spend in the character creator?', 'minutes', 1, 120, { ratio: 3 }),
@@ -858,6 +913,81 @@ const Engine = (() => {
       O('N71', 'If your guild had a mascot, what would it be?', 'What mascot would {name} pick for the guild?', 'The mascot', 'murloc gnome chicken boar')
     ]
   ];
+  // v5 sets (Prompt Lab round 3). Links carry their version, so v4 links keep playing SETS_V4.
+  const SETS = [
+    [
+      O('R18', 'Finish this: “The real final boss is…”', 'How does {name} finish this: “The real final boss is…”', 'Finish the line', 'queue sleep work wife girlfriend boyfriend kids life lag mom boss'),
+      N('B18', 'How many minutes do you spend in the character creator?', 'How many minutes does {name} spend in the character creator?', 'minutes', 1, 120, { ratio: 3 }),
+      S5('B33', 'How smelly is your character?', 'How smelly does {name} say their character is?', 'Fresh', 'Swamp'),
+      O('N74', 'What was the class of your first ever character?', 'What was the class of {name}’s first ever character?', 'A class', 'warrior mage priest rogue hunter warlock paladin druid shaman'),
+      YN('R01', 'Have you ever played WoW at work?', 'Has {name} ever played WoW at work?'),
+      S5('B41', 'How sweaty is your guild?', 'How sweaty does {name} say their guild is?', 'Chill', 'Spreadsheets'),
+      N('N73', 'What year did you start playing WoW?', 'What year did {name} start playing WoW?', '', 2004, 2026, { tol: 6 }),
+      O('R19', 'Which mob do you hate the most?', 'Which mob does {name} hate the most?', 'A mob', 'murloc murlocs harpy harpies kobold kobolds spider spiders raptor raptors gnoll gnolls')
+    ],
+    [
+      O('B05', 'Which guildie will hit 60 first?', 'Which guildie does {name} think will hit 60 first?', 'A name', 'nobody tank hunter guildmaster', WHO),
+      N('B13', 'How many hours will you play on launch day?', 'How many hours will {name} play on launch day?', 'hours', 0, 24, { tol: 6 }),
+      S5('B40', 'How much do you care how your character looks?', 'How much does {name} care how their character looks?', 'Whatever drops', 'Full fashion'),
+      O('N10', 'Which race matches your real personality?', 'Which race matches {name}’s real personality?', 'A race', 'human dwarf gnome nightelf orc troll tauren undead'),
+      YN('B57', 'Do you name your mounts?', 'Does {name} name their mounts?'),
+      S5('X05', 'How cluttered is your screen with addons?', 'How cluttered is {name}’s screen with addons?', 'Default UI', 'Can’t see the game'),
+      N('B17', 'How much gold will you have when you hit 60?', 'How much gold will {name} have when they hit 60?', 'gold', 0, 5000, { ratio: 3 }),
+      O('R20', 'Which capital city would you actually live in?', 'Which capital city would {name} actually live in?', 'A city', 'stormwind ironforge darnassus orgrimmar undercity thunder bluff')
+    ],
+    [
+      O('X02', 'What will your guild argue about first?', 'What does {name} think their guild will argue about first?', 'One thing', 'loot dkp drama raid raids time discord rules'),
+      N('B20', 'How many coffees or energy drinks will you have on launch day?', 'How many coffees or energy drinks will {name} have on launch day?', 'drinks', 0, 20, { tol: 4 }),
+      S5('B38', 'How organized are your bags?', 'How organized does {name} say their bags are?', 'Gray-item graveyard', 'Sorted by color'),
+      O('R21', 'Finish this: “I only log off when…”', 'How does {name} finish this: “I only log off when…”', 'Finish the line', 'sleep tired wife girlfriend boyfriend mom sun sunrise morning work battery'),
+      YN('B54', 'Have you ever ninja-looted?', 'Has {name} ever ninja-looted?'),
+      S5('X08', 'How much of a loot goblin are you?', 'How much of a loot goblin is {name}?', 'Pass on everything', 'Need on everything'),
+      N('R04', 'How many minutes can you go without checking Discord?', 'How many minutes can {name} go without checking Discord?', 'minutes', 0, 600, { ratio: 3 }),
+      O('N33', 'Which zone has the best music?', 'Which zone does {name} think has the best music?', 'A zone', '')
+    ],
+    [
+      { id: 'R06', type: 'choice', q: 'How are you spending the night before launch?', qc: 'How is {name} spending the night before launch?', options: ['Early night, big day', 'Hype videos till 3am', 'Stockpiling snacks', 'Normal night, I’m an adult'] },
+      N('N02', 'How many hours will you sleep on launch night?', 'How many hours will {name} sleep on launch night?', 'hours', 0, 12, { tol: 4 }),
+      S5('B44', 'How much drama will your guild have this month?', 'How much drama does {name} expect in their guild this month?', 'None', 'Reality show'),
+      O('R22', 'What real-life chore will you skip for WoW this week?', 'What real-life chore will {name} skip for WoW this week?', 'A chore', 'dishes laundry cleaning gym shower cooking vacuuming groceries sleep'),
+      YN('B62', 'Will you be online the minute servers open?', 'Will {name} be online the minute servers open?'),
+      S5('B49', 'How much do you talk to strangers in-game?', 'How much does {name} talk to strangers in-game?', 'Ghost mode', 'Adopts every lowbie'),
+      N('B28', 'What hour will you log off on launch night?', 'What hour will {name} log off on launch night?', 'clock', 0, 23, { tol: 4, circular: 24 }),
+      O('X16', 'What’s the first thing you’ll do when you hit 60?', 'What’s the first thing {name} will do when they hit 60?', 'One thing', 'dungeon raid mount gold farm alt sleep celebrate gear screenshot scream dance')
+    ],
+    [
+      O('R23', 'Which class annoys you most in PvP?', 'Which class annoys {name} most in PvP?', 'A class', 'rogue rogues mage mages warrior warriors hunter hunters paladin paladins priest priests warlock warlocks druid druids shaman shamans'),
+      N('X17', 'What’s the most hours you’ve played WoW in one day?', 'What’s the most hours {name} has played WoW in one day?', 'hours', 0, 24, { tol: 5 }),
+      S5('B39', 'How much quest text do you actually read?', 'How much quest text does {name} say they read?', 'Accept, accept, accept', 'Every word, then the wiki'),
+      O('N50', 'Finish this: “Sorry I’m late, …”', 'How does {name} finish this: “Sorry I’m late, …”', 'Finish the line', 'work traffic dinner sleep forgot kids wife girlfriend dog'),
+      YN('R07', 'Have you ever cancelled real-life plans for a raid?', 'Has {name} ever cancelled real-life plans for a raid?'),
+      S5('B37', 'How likely are you to pull extra mobs?', 'How likely is {name} to pull extra mobs?', 'Never', 'Every pack'),
+      N('X07', 'How many hours of sleep will you get this week?', 'How many hours of sleep will {name} get this week?', 'hours', 0, 70, { tol: 12 }),
+      O('N32', 'Where’s your favorite spot to AFK?', 'Where’s {name}’s favorite spot to AFK?', 'A place', 'ironforge orgrimmar stormwind bank auction house inn mailbox')
+    ],
+    [
+      O('R24', 'Which dungeon do you never want to run again?', 'Which dungeon does {name} never want to run again?', 'A dungeon', ''),
+      N('B15', 'How many days will it take you to hit 60?', 'How many days will it take {name} to hit 60?', 'days', 1, 365, { ratio: 3 }),
+      S5('B42', 'How bad is your sense of direction in Azeroth?', 'How bad does {name} say their sense of direction is?', 'Human GPS', 'Lost in Goldshire'),
+      O('R09', 'Which guildie is most likely to fall asleep mid-raid?', 'Which guildie does {name} think will fall asleep mid-raid?', 'A name', 'nobody tank healer hunter guildmaster everyone', WHO),
+      YN('R10', 'Have you ever blamed lag for your own mistake?', 'Has {name} ever blamed lag for their own mistake?'),
+      S5('R11', 'How hard do you stare at the damage meters?', 'How hard does {name} stare at the damage meters?', 'What meters?', 'Screenshot every pull'),
+      N('R17', 'How many times have you quit WoW for good?', 'How many times has {name} quit WoW for good?', 'times', 0, 20, { ratio: 2.5 }),
+      O('R12', 'Stranded on an island in Azeroth: what 3 things do you bring?', 'Stranded on an island in Azeroth, what 3 things does {name} bring?', 'Three things', 'hearthstone fishing pole rod healer water food mage portal bag bags')
+    ],
+    [
+      O('X01', 'Which guildie will rage-quit first?', 'Which guildie does {name} think will rage-quit first?', 'A name', 'nobody tank healer hunter guildmaster everyone', WHO),
+      N('R13', 'How many wipes before you call it a night?', 'How many wipes before {name} calls it a night?', 'wipes', 0, 30, { ratio: 2.5 }),
+      S5('B50', 'How likely are you to reroll in week one?', 'How likely is {name} to reroll in week one?', 'Main for life', 'Already planned'),
+      O('N66', 'What would you do with a free Saturday?', 'What would {name} do with a free Saturday?', 'A few words', 'sleep game gaming wow play nothing gym friends family'),
+      YN('B64', 'Will you still be playing in March?', 'Will {name} still be playing in March?'),
+      S5('B47', 'How often do you stand in fire?', 'How often does {name} admit to standing in fire?', 'Never', 'It’s my home'),
+      N('B26', 'How many hours a week will you play in November?', 'How many hours a week will {name} play in November?', 'hours', 0, 100, { ratio: 2.5 }),
+      O('R25', 'Which raid boss do you most want to kill?', 'Which raid boss does {name} most want to kill?', 'A boss', 'onyxia ragnaros')
+    ]
+  ];
+  const LINK_VER = 5;
+  const SETS_BY_VER = { 4: SETS_V4, 5: SETS };
   const PER_DAY = 8;
   const MAX_CHARS = 60;
   const PROMPT_POINTS = 10000;
@@ -866,9 +996,10 @@ const Engine = (() => {
   function dayAt(t) { return Math.max(1, Math.floor((t - EPOCH) / DAY_MS) + 1); }
   function dayStart(day) { return EPOCH + (day - 1) * DAY_MS; }
   function nextReset(t) { return dayStart(dayAt(t) + 1); }
-  function setFor(day) {
-    const i = (((day - 1) % SETS.length) + SETS.length) % SETS.length;
-    return SETS[i];
+  function setFor(day, ver = LINK_VER) {
+    const sets = SETS_BY_VER[ver] || SETS;
+    const i = (((day - 1) % sets.length) + sets.length) % sets.length;
+    return sets[i];
   }
   function qFor(p, name) { return p.qc.replace(/\{name\}/g, name); }
   function fmtNumber(p, v) {
@@ -897,6 +1028,50 @@ const Engine = (() => {
       case 'multi': return p.options.filter((_, i) => v & (1 << i)).join(', ');
       default: return String(v);
     }
+  }
+
+  /* ---------- Bond with one person: reputation that grows each day you crack them ---------- */
+  // Gain per day = points / 50 (a perfect day is +1,000), times a streak bonus of +10% per consecutive day, up to +50%.
+  const BOND_TIERS = [
+    { key: 'neutral', name: 'Neutral', min: 0 },
+    { key: 'friendly', name: 'Friendly', min: 500 },
+    { key: 'honored', name: 'Honored', min: 1500 },
+    { key: 'revered', name: 'Revered', min: 3500 },
+    { key: 'exalted', name: 'Exalted', min: 7000 }
+  ];
+  function bondTier(rep) {
+    let t = BOND_TIERS[0];
+    for (const x of BOND_TIERS) if (rep >= x.min) t = x;
+    return t;
+  }
+  // entries: [{ day, total }] in any order; a day cracked twice counts its best score once.
+  function bondFrom(entries) {
+    const best = new Map();
+    for (const e of entries || []) {
+      if (!e || !Number.isInteger(e.day) || e.day < 1) continue;
+      const pts = Math.max(0, Math.min(MAX_POINTS, Math.round(+e.total || 0)));
+      best.set(e.day, Math.max(best.get(e.day) || 0, pts));
+    }
+    const days = [...best.keys()].sort((a, b) => a - b);
+    let rep = 0, streak = 0, prev = null;
+    const steps = days.map(day => {
+      streak = prev != null && day === prev + 1 ? streak + 1 : 1;
+      prev = day;
+      const mult = Math.min(1.5, 1 + 0.1 * (streak - 1));
+      const gain = Math.round(best.get(day) / 50 * mult);
+      const before = rep;
+      rep += gain;
+      return { day, total: best.get(day), streak, mult, gain, before, rep };
+    });
+    const tier = bondTier(rep);
+    const next = BOND_TIERS[BOND_TIERS.indexOf(tier) + 1] || null;
+    const last = steps[steps.length - 1] || null;
+    return {
+      rep, tier, next, steps, days: steps.length,
+      lastDay: last ? last.day : 0,
+      streak: last ? last.streak : 0,
+      progress: next ? (rep - tier.min) / (next.min - tier.min) : 1
+    };
   }
 
   /* ---------- Bond tiers (item quality), by share of 50,000 ---------- */
@@ -1001,7 +1176,8 @@ const Engine = (() => {
       default: return false;
     }
   }
-  // v4 layout: [4, dayHi, dayLo, handleLen, handle…, nameLen, name…, count, answer per question by type, sumA, sumB]
+  // Layout (v4 and v5): [version, dayHi, dayLo, handleLen, handle…, nameLen, name…, count, answer per question by type, sumA, sumB].
+  // The version byte picks the question sets, so old links keep their own questions.
   // open = len + UTF-8, number = 3 bytes, scale/yesno/choice/multi = 1 byte.
   function encodeLink({ handle, name, day, answers }) {
     if (!HANDLE_RE.test(handle)) throw new Error('handle');
@@ -1011,7 +1187,7 @@ const Engine = (() => {
     const enc = new TextEncoder();
     const nm = cleanName(name);
     const nb = nm && nm !== cap(handle) ? enc.encode(nm) : new Uint8Array(0);
-    const body = [4, day >> 8, day & 255, handle.length, ...enc.encode(handle), nb.length, ...nb, set.length];
+    const body = [LINK_VER, day >> 8, day & 255, handle.length, ...enc.encode(handle), nb.length, ...nb, set.length];
     set.forEach((p, i) => {
       const a = answers[i];
       if (!validAnswer(p, a)) throw new Error('answer ' + (i + 1));
@@ -1041,7 +1217,7 @@ const Engine = (() => {
     };
     const dec = new TextDecoder('utf-8', { fatal: true });
     const ver = take(1)[0];
-    if (ver !== 4) { const e = new Error('version'); e.ver = ver; throw e; }
+    if (!SETS_BY_VER[ver]) { const e = new Error('version'); e.ver = ver; throw e; }
     const [dh, dl] = take(2);
     const day = dh * 256 + dl;
     if (day < 1) throw new Error('day');
@@ -1051,7 +1227,7 @@ const Engine = (() => {
     const nl = take(1)[0];
     if (nl > 64) throw new Error('name length');
     const name = nl ? cleanName(dec.decode(take(nl))) : '';
-    const set = setFor(day);
+    const set = setFor(day, ver);
     if (take(1)[0] !== set.length) throw new Error('count');
     const answers = set.map((q) => {
       let a;
@@ -1066,7 +1242,7 @@ const Engine = (() => {
       return a;
     });
     if (p !== bytes.length) throw new Error('trailing data');
-    return { handle, name: name || cap(handle), day, answers };
+    return { handle, name: name || cap(handle), day, answers, ver };
   }
 
   /* ---------- Word data ---------- */
@@ -1626,7 +1802,8 @@ const Engine = (() => {
   }
 
   return {
-    EPOCH, DAY_MS, SETS, PER_DAY, MAX_CHARS, PROMPT_POINTS, MAX_POINTS, TIERS, HANDLE_RE, TYPE_POINTS, TRY_FACTORS, CHOICE_FACTORS,
+    EPOCH, DAY_MS, SETS, SETS_V4, LINK_VER, PER_DAY, MAX_CHARS, PROMPT_POINTS, MAX_POINTS, TIERS, HANDLE_RE, TYPE_POINTS, TRY_FACTORS, CHOICE_FACTORS,
+    BOND_TIERS, bondTier, bondFrom,
     dayAt, dayStart, nextReset, setFor, tierFor, squareFor, qFor, fmtNumber, fmtAnswer, rangeLabel, validAnswer, bits,
     slug, cleanName, cleanAnswer, cap, handleProblem,
     encodeLink, decodeLink, tokenize, isForeign, analyze, crack, scoreOpen, closeness, scoreSimple, fillBlank,
@@ -1685,7 +1862,8 @@ const Engine = (() => {
     code: '',          // open crack link
     g: [],             // crack: per question { tries: [], done }
     saved: null,       // where a preview returns to
-    profile: ''
+    profile: '',
+    ver: E.LINK_VER    // question-set version of what's on screen (old links keep their own)
   };
   let LINK = null;     // decoded open link
   let AN = [];         // analysed open answers (null for other types)
@@ -1699,7 +1877,8 @@ const Engine = (() => {
     return location.href.replace(/#.*$/, '');
   }
   const linkFor = (handle, day, code) => `${baseUrl()}#${handle}-${day}-${code}`;
-  const setOf = day => E.setFor(day);
+  const setOf = (day, ver) => E.setFor(day, ver == null ? E.LINK_VER : ver);
+  function verOf(code) { try { return E.decodeLink(code).ver; } catch (e) { return E.LINK_VER; } }
 
   const VIEWS = ['home', 'prompt', 'claim', 'locked', 'intro', 'result', 'profile', 'ask', 'invalid'];
   function show(view, focusId, chip) {
@@ -1978,7 +2157,7 @@ const Engine = (() => {
     $('pGems').replaceChildren(...gems);
   }
   function renderPrompt() {
-    const set = setOf(S.day);
+    const set = setOf(S.day, S.ver);
     const p = set[S.idx];
     const lock = S.mode === 'lock';
     const name = LINK ? LINK.name : '';
@@ -2038,27 +2217,27 @@ const Engine = (() => {
     const d = today();
     if (getMine()[d]) { renderLockedFromMine(d); return; }
     if (S.pending && S.pending.day === d && !getMe()) {
-      Object.assign(S, { mode: 'lock', day: d, idx: E.PER_DAY - 1, answers: S.pending.answers.slice() });
+      Object.assign(S, { mode: 'lock', day: d, ver: E.LINK_VER, idx: E.PER_DAY - 1, answers: S.pending.answers.slice() });
       openClaim('lock');
       return;
     }
-    Object.assign(S, { mode: 'lock', day: d, idx: 0, answers: new Array(E.PER_DAY).fill(null) });
+    Object.assign(S, { mode: 'lock', day: d, ver: E.LINK_VER, idx: 0, answers: new Array(E.PER_DAY).fill(null) });
     LINK = null;
     clearHash();
     track('lock_start', { from });
     renderPrompt();
   }
   function pickValue(v) {
-    const p = setOf(S.day)[S.idx];
+    const p = setOf(S.day, S.ver)[S.idx];
     if (S.view !== 'prompt') return;
     if (S.mode === 'lock') {
       S.answers[S.idx] = v;
       $('pControls').querySelectorAll('button[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(v))));
-      setTimeout(() => { if (S.view === 'prompt' && S.mode === 'lock' && setOf(S.day)[S.idx] === p) advanceLock(); }, 220);
+      setTimeout(() => { if (S.view === 'prompt' && S.mode === 'lock' && setOf(S.day, S.ver)[S.idx] === p) advanceLock(); }, 220);
     } else crackTry(v, false);
   }
   function submitLock() {
-    const p = setOf(S.day)[S.idx];
+    const p = setOf(S.day, S.ver)[S.idx];
     let v = readControl(p);
     if (v == null && (p.type === 'scale' || p.type === 'yesno' || p.type === 'choice')) v = S.answers[S.idx];
     if (v == null || !E.validAnswer(p, v)) { setHint(problemFor(p), true); focusControl(); return; }
@@ -2075,7 +2254,7 @@ const Engine = (() => {
     const me = getMe();
     const code = E.encodeLink({ handle: me.handle, name: me.name, day: S.day, answers: S.answers });
     const mine = getMine();
-    mine[S.day] = { code, answers: S.answers.slice(), ts: Date.now() };
+    mine[S.day] = { code, answers: S.answers.slice(), ver: E.LINK_VER, ts: Date.now() };
     store.set(KEY.mine, mine);
     S.pending = null;
     track('lock_done', { day: S.day, asked: !!S.askFrom });
@@ -2090,6 +2269,7 @@ const Engine = (() => {
     const me = getMe();
     S.mode = null;
     S.day = day;
+    S.ver = verOf(code);
     S.code = code;
     const link = linkFor(me.handle, day, code);
     const ask = S.askFrom ? E.cap(S.askFrom) : '';
@@ -2100,7 +2280,7 @@ const Engine = (() => {
       ? `${ask}, I locked in Soulbound #${day}. Crack my mind: ${link}`
       : `I locked in Soulbound #${day}. Crack my mind: ${link}`;
     $('lockedState').textContent = '';
-    const set = setOf(day);
+    const set = setOf(day, S.ver);
     $('lockedAnswers').replaceChildren(...answers.map((a, i) => {
       const li = el('li');
       li.append(el('div', 'qt', set[i].q), el('div', 'pk', E.fmtAnswer(set[i], a)));
@@ -2162,7 +2342,8 @@ const Engine = (() => {
   function loadLink(link, code) {
     LINK = link;
     S.code = code;
-    const set = setOf(link.day);
+    S.ver = link.ver;
+    const set = setOf(link.day, link.ver);
     AN = link.answers.map((a, i) => (set[i].type === 'open' ? E.analyze(a, set[i]) : null));
   }
   function openLink(handle, day, code) {
@@ -2204,6 +2385,13 @@ const Engine = (() => {
     setText('cname', LINK.name);
     $('introEyebrow').textContent = `Soulbound #${LINK.day}`;
     $('introPast').hidden = !(LINK.day < today());
+    const b = bondFor(LINK.handle);
+    const note = $('introBond');
+    note.hidden = !b.days;
+    if (b.days) {
+      note.dataset.tier = b.tier.key;
+      note.replaceChildren(`Your bond with ${LINK.name}: `, el('b', '', b.tier.name), ` · ${[`${b.days} ${b.days === 1 ? 'day' : 'days'} cracked`, streakText(b)].filter(Boolean).join(' · ')}`);
+    }
     show('intro', 'introTitle', `Crack ${LINK.name}`);
   }
   function saveRead(done) {
@@ -2226,7 +2414,7 @@ const Engine = (() => {
 
   /* ---------- Cracking ---------- */
   function evalQ(i) {
-    const p = setOf(LINK.day)[i];
+    const p = setOf(LINK.day, LINK.ver)[i];
     const a = LINK.answers[i];
     const st = S.g[i] || { tries: [], done: false };
     if (p.type === 'open') {
@@ -2258,7 +2446,7 @@ const Engine = (() => {
     if (S.view !== 'prompt' || S.mode === 'lock') return;
     const st = S.g[S.idx];
     if (!st || st.done) return;
-    const p = setOf(LINK.day)[S.idx];
+    const p = setOf(LINK.day, LINK.ver)[S.idx];
     stopTimer();
     if (p.type === 'open') st.tries.push(typeof v === 'string' ? v : '');
     else st.tries.push(v == null ? null : v);
@@ -2476,8 +2664,71 @@ const Engine = (() => {
   }
 
   /* ---------- Result ---------- */
+  /* ---------- Bond: reputation with one person, from finished cracks on this device ---------- */
+  function bondEntries(handle) {
+    return Object.values(getReads())
+      .filter(r => r && r.done && r.handle === handle)
+      .map(r => ({ day: r.day, total: r.total || 0 }));
+  }
+  const bondFor = handle => E.bondFrom(bondEntries(handle));
+  const liveStreak = b => (b.lastDay >= today() - 1 ? b.streak : 0);
+  function paintRepBar(bar, fill, nums, b) {
+    const t = b.tier, n = b.next;
+    fill.style.setProperty('--w', `${Math.round(b.progress * 100)}%`);
+    if (nums) nums.textContent = n ? `${fmt(b.rep - t.min)} / ${fmt(n.min - t.min)}` : `${fmt(b.rep)} · Exalted`;
+    bar.setAttribute('aria-label', n ? `${t.name}: ${fmt(b.rep - t.min)} of ${fmt(n.min - t.min)} to ${n.name}` : `${t.name}, the top bond`);
+  }
+  function streakText(b) {
+    const st = liveStreak(b);
+    return st > 1 ? `${st}-day streak` : '';
+  }
+  // This crack's part of the bond: its day's gain, and the tier before and after it.
+  function bondStep(b, day) {
+    const step = b.steps.find(x => x.day === day);
+    if (!step) return null;
+    return { ...step, from: E.bondTier(step.before), to: E.bondTier(step.rep) };
+  }
+  function renderBond(preview) {
+    const box = $('bondBox');
+    if (preview || !LINK) { box.hidden = true; return null; }
+    const b = bondFor(LINK.handle);
+    const step = bondStep(b, LINK.day);
+    box.hidden = false;
+    box.dataset.tier = b.tier.key;
+    $('bondTier').textContent = b.tier.name;
+    paintRepBar($('bondBar'), $('bondFill'), $('bondNums'), b);
+    $('bondGain').textContent = step && step.gain > 0
+      ? `Your bond with ${LINK.name} has increased by ${fmt(step.gain)}.${step.mult > 1 ? ` (${step.streak}-day streak: +${Math.round((step.mult - 1) * 100)}%)` : ''}`
+      : `No bond gained this time.`;
+    const up = !!step && step.to.key !== step.from.key;
+    $('bondUp').hidden = !up;
+    if (up) $('bondUp').textContent = `You are now ${step.to.name} with ${LINK.name}.`;
+    $('bondHint').textContent = b.next
+      ? `Crack ${LINK.name} again tomorrow: every day in a row adds 10% bond, up to +50%. ${b.next.name} at ${fmt(b.next.min)}.`
+      : `Exalted. ${LINK.name} has no secrets left.`;
+    return b;
+  }
+  function bondRow(handle, name, b) {
+    const li = el('li');
+    const btn = el('button', 'brow bondrow');
+    btn.type = 'button';
+    btn.dataset.tier = b.tier.key;
+    const left = el('div');
+    const bar = el('div', 'repbar');
+    bar.setAttribute('role', 'img');
+    const fill = el('i');
+    bar.append(fill);
+    paintRepBar(bar, fill, null, b);
+    const sub = [`${b.days} ${b.days === 1 ? 'day' : 'days'} cracked`, streakText(b)].filter(Boolean).join(' · ');
+    left.append(el('div', 'bname', name), el('div', 'bsub', sub), bar);
+    btn.append(left, el('div', 'btier', b.tier.name));
+    btn.addEventListener('click', () => renderProfile(handle));
+    li.append(btn);
+    return li;
+  }
+
   function crackerName() { const me = getMe(); return me ? me.name : 'You'; }
-  function buildTooltip(card, t, a, b, total) {
+  function buildTooltip(card, t, a, b, total, bond) {
     card.style.setProperty('--rarity', `var(--q-${t.key})`);
     const row = el('p', 'tt-row');
     row.append(el('span', '', t.title), el('span', 'q', t.name));
@@ -2495,6 +2746,7 @@ const Engine = (() => {
       el('p', '', 'Soulbound'),
       row,
       el('p', '', `+${fmt(total)} Telepathy`),
+      ...(bond ? [(() => { const p = el('p', 'tt-rep', `${bond.tier.name} with ${b}`); p.dataset.tier = bond.tier.key; return p; })()] : []),
       el('p', 'tt-equip', t.equip),
       el('p', 'tt-flavor', t.flavor),
       gems
@@ -2504,7 +2756,12 @@ const Engine = (() => {
     const total = totalPoints();
     const t = E.tierFor(total);
     const squares = Array.from({ length: E.PER_DAY }, (_, i) => { const r = evalQ(i); return E.squareFor(r.points, r.max); }).join('');
-    return `Soulbound #${LINK.day} · I cracked ${LINK.name}: ${fmt(total)} / ${fmt(E.MAX_POINTS)} ${t.emoji}\n${squares}\nThink you know ${LINK.name} better? ${linkFor(LINK.handle, LINK.day, S.code)}`;
+    let bondLine = '';
+    if (S.mode !== 'preview') {
+      const b = bondFor(LINK.handle);
+      if (b.days) bondLine = `\nBond: ${b.tier.name}${streakText(b) ? ` · ${streakText(b)}` : ''}`;
+    }
+    return `Soulbound #${LINK.day} · I cracked ${LINK.name}: ${fmt(total)} / ${fmt(E.MAX_POINTS)} ${t.emoji}\n${squares}${bondLine}\nThink you know ${LINK.name} better? ${linkFor(LINK.handle, LINK.day, S.code)}`;
   }
   function triesText(p, st) {
     if (!st.tries.length) return 'nothing';
@@ -2517,11 +2774,12 @@ const Engine = (() => {
     const past = LINK.day < today();
     setText('cname', LINK.name);
     $('v-result').style.setProperty('--rarity', `var(--q-${t.key})`);
-    $('resultEyebrow').textContent = `Soulbound #${LINK.day} · ${t.name} bond`;
+    $('resultEyebrow').textContent = `Soulbound #${LINK.day} · ${t.name} read`;
     $('resultTitle').textContent = total > 0 ? `You cracked ${LINK.name}` : `${LINK.name}’s mind stayed shut`;
     $('resultPoints').textContent = fmt(total);
     const card = $('resultCard');
-    buildTooltip(card, t, crackerName(), LINK.name, total);
+    const bond = renderBond(preview);
+    buildTooltip(card, t, crackerName(), LINK.name, total, bond);
     card.classList.remove('drop');
     void card.offsetWidth;
     card.classList.add('drop');
@@ -2533,7 +2791,7 @@ const Engine = (() => {
     $('resultText').textContent = resultText();
     $('resultState').textContent = '';
     $('resultPreview').hidden = !preview;
-    const set = setOf(LINK.day);
+    const set = setOf(LINK.day, LINK.ver);
     $('resultList').replaceChildren(...set.map((p, i) => {
       const r = evalQ(i);
       const li = el('li');
@@ -2665,6 +2923,10 @@ const Engine = (() => {
     push('Soulbound', 44, col.white, 58, 0);
     items.push({ kind: 'row', left: t.title, right: t.name, size: 44, lh: 58 });
     push(`+${fmt(total)} Telepathy`, 44, col.white, 58, 8);
+    if (S.mode !== 'preview') {
+      const b = bondFor(LINK.handle);
+      if (b.days) push(`${b.tier.name} with ${LINK.name}`, 40, v('--rep-' + b.tier.key), 54, 8);
+    }
     push(t.equip, 40, col.equip, 54, 8);
     push(t.flavor, 40, col.flavor, 54, 20);
     items.push({ kind: 'gems', lh: 56 });
@@ -2774,9 +3036,14 @@ const Engine = (() => {
       }
       cta.append(b);
       box.append(cta);
+      const people = new Map();
+      for (const r of reads) if (!people.has(r.handle) || r.ts > people.get(r.handle).ts) people.set(r.handle, r);
+      const bonds = [...people.values()].map(r => ({ handle: r.handle, name: r.name, b: bondFor(r.handle) })).sort((x, y) => y.b.rep - x.b.rep);
+      $('profBonds').replaceChildren(...bonds.map(x => bondRow(x.handle, x.name, x.b)));
+      $('profBondsEmpty').hidden = !!bonds.length;
       $('profDays').replaceChildren(...days.map(day => {
         const rec = mine[day];
-        const set = setOf(day);
+        const set = setOf(day, rec.ver || verOf(rec.code));
         const opens = rec.answers.map((a, i) => (set[i] && set[i].type === 'open' ? a : null)).filter(Boolean);
         const li = el('li', 'brow');
         const left = el('div');
@@ -2802,6 +3069,14 @@ const Engine = (() => {
       $('profileSub').textContent = theirs.length
         ? `${theirs.length} ${theirs.length === 1 ? 'crack' : 'cracks'} · best ${fmt(best)} · average ${fmt(avg)}`
         : `You haven’t cracked ${name} on this device yet.`;
+      const bond = bondFor(handle);
+      const pb = $('profBond');
+      pb.dataset.tier = bond.tier.key;
+      $('profBondTier').textContent = bond.tier.name;
+      paintRepBar($('profBondBar'), $('profBondFill'), $('profBondNums'), bond);
+      $('profBondLine').textContent = bond.days
+        ? [`${bond.days} ${bond.days === 1 ? 'day' : 'days'} cracked`, streakText(bond), bond.next ? `${fmt(bond.next.min - bond.rep)} to ${bond.next.name}` : 'Exalted'].filter(Boolean).join(' · ')
+        : `Crack ${name} to start a bond. Every day in a row adds 10%.`;
       $('profHist').replaceChildren(...theirs.map(r => {
         const tt = E.tierFor(r.total || 0);
         const li = el('li');
@@ -2884,14 +3159,14 @@ const Engine = (() => {
   $('pForm').addEventListener('submit', e => {
     e.preventDefault();
     if (S.mode === 'lock') { submitLock(); return; }
-    const p = setOf(S.day)[S.idx];
+    const p = setOf(S.day, S.ver)[S.idx];
     const v = readControl(p);
     if (p.type === 'multi' && !v) { setHint('Pick at least one.', true); return; }
     crackTry(v, false);
   });
   $('pBack').addEventListener('click', () => {
     if (S.mode !== 'lock' || S.idx === 0) return;
-    const p = setOf(S.day)[S.idx];
+    const p = setOf(S.day, S.ver)[S.idx];
     const v = readControl(p);
     if (v != null && E.validAnswer(p, v)) S.answers[S.idx] = v;
     S.idx -= 1;
