@@ -483,6 +483,51 @@ details.answers summary { cursor: pointer; color: var(--gold-hi); font-weight: 7
 .foot { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--line-soft); padding-top: 1rem; display: grid; gap: 0.15rem; }
 .foot a { color: inherit; }
 
+/* Motion */
+.view.in { animation: viewin 0.32s ease-out both; }
+@keyframes viewin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.emblem .lens { transform-origin: 32px 22px; animation: lens 3.2s ease-in-out infinite; }
+.emblem circle { transform-origin: 32px 22px; animation: lensglow 3.2s ease-in-out infinite; }
+@keyframes lens { 50% { transform: scale(1.12); filter: brightness(1.25); } }
+@keyframes lensglow { 50% { transform: scale(1.18); opacity: 0.7; } }
+.emblem path:not(.lens) { animation: emblemin 0.7s cubic-bezier(0.2, 0.85, 0.25, 1.15) both; }
+.emblem path:nth-of-type(2) { animation-delay: 0.1s; }
+@keyframes emblemin { from { opacity: 0; transform: translateX(var(--dx, 0)) scale(0.8); } to { opacity: 1; transform: none; } }
+.emblem path:nth-of-type(1) { --dx: -8px; } .emblem path:nth-of-type(2) { --dx: 8px; }
+.w.new { animation: unredact 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.2) both; animation-delay: var(--d, 0s); }
+@keyframes unredact {
+  from { opacity: 0; transform: translateY(4px) scale(0.85); filter: blur(3px); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.06); filter: blur(0); }
+  to { transform: none; }
+}
+.w.new.crit { animation: unredact 0.55s cubic-bezier(0.2, 0.85, 0.25, 1.2) both, critflash 0.9s ease-out 0.5s both; animation-delay: var(--d, 0s), calc(var(--d, 0s) + 0.5s); }
+@keyframes critflash {
+  0% { text-shadow: 0 0 0 currentColor; }
+  20% { text-shadow: 0 0 18px currentColor, 0 0 36px currentColor; transform: scale(1.1) rotate(-1.5deg); }
+  40% { transform: scale(1.08) rotate(1.5deg); }
+  60% { transform: scale(1.04) rotate(-1deg); }
+  100% { text-shadow: 0 0 12px rgba(255, 255, 255, 0.25); transform: none; }
+}
+.ln.crit.pop { animation: pop 0.35s ease-out both, critline 0.6s ease-out 0.35s both; }
+@keyframes critline { 0% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } 100% { transform: none; } }
+.gem.ping::after { animation: gemin 0.5s cubic-bezier(0.2, 0.85, 0.25, 1.3) both; }
+.gem.ping::before { content: ""; position: absolute; width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid var(--gc, var(--gold-hi)); animation: ring 0.7s ease-out both; }
+.gem { position: relative; }
+@keyframes gemin { from { transform: rotate(45deg) scale(0); } 70% { transform: rotate(45deg) scale(1.35); } to { transform: rotate(45deg) scale(1); } }
+@keyframes ring { from { transform: scale(0.5); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+.bigscore.count { animation: score 0.5s cubic-bezier(0.2, 0.85, 0.25, 1.2) both; }
+.tooltip .tt-gem { animation: gemdrop 0.6s cubic-bezier(0.2, 0.85, 0.25, 1.3) 0.55s both; }
+@keyframes gemdrop { from { opacity: 0; transform: scale(0.3) rotate(-30deg); } 70% { transform: scale(1.15) rotate(5deg); } to { opacity: 1; transform: none; } }
+.tooltip .tt-gem g[stroke] { transform-origin: 28px 28px; animation: rays 14s linear infinite; }
+@keyframes rays { to { transform: rotate(360deg); } }
+.tooltip .sockets .gem { animation: viewin 0.3s ease-out both; animation-delay: calc(0.7s + var(--i, 0) * 60ms); }
+.btn.primary { background-size: 100% 100%; position: relative; overflow: hidden; }
+.btn.primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%); transform: translateX(-120%); }
+.btn.primary:hover:not(:disabled)::after { animation: sheen 0.7s ease-out; }
+@keyframes sheen { to { transform: translateX(120%); } }
+.timer[data-low="1"] .timer-track { animation: trackshake 0.5s ease-in-out infinite; }
+@keyframes trackshake { 25% { transform: translateX(-1px); } 75% { transform: translateX(1px); } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -1985,8 +2030,10 @@ const Engine = (() => {
 
   const VIEWS = ['home', 'prompt', 'claim', 'locked', 'intro', 'result', 'profile', 'ask', 'invalid'];
   function show(view, focusId, chip) {
+    const changed = S.view !== view;
     S.view = view;
     for (const v of VIEWS) $('v-' + v).hidden = v !== view;
+    if (changed) { const n = $('v-' + view); n.classList.remove('in'); void n.offsetWidth; n.classList.add('in'); }
     document.documentElement.dataset.view = view;
     $('chip').textContent = chip || (view === 'home' ? 'WoW: Forever' : `Soulbound #${today()}`);
     if (view !== 'prompt') stopTimer();
@@ -2244,6 +2291,7 @@ const Engine = (() => {
   }
 
   /* ---------- Prompt screen ---------- */
+  let pingGem = -1;    // socket that just filled: gets the ping animation once
   function renderGems() {
     const gems = [];
     for (let i = 0; i < E.PER_DAY; i++) {
@@ -2254,6 +2302,7 @@ const Engine = (() => {
         const r = evalQ(i);
         if (r.points > 0) g.dataset.q = E.tierFor(r.points, r.max).key;
         else g.classList.add('zero');
+        if (i === pingGem) { g.classList.add('ping'); pingGem = -1; }
       }
       if (i === S.idx) g.classList.add('now');
       gems.push(g);
@@ -2555,7 +2604,7 @@ const Engine = (() => {
     stopTimer();
     if (p.type === 'open') st.tries.push(typeof v === 'string' ? v : '');
     else st.tries.push(v == null ? null : v);
-    if (!canRetry(S.idx)) st.done = true;
+    if (!canRetry(S.idx)) { st.done = true; pingGem = S.idx; }
     saveRead(false);
     track('crack_try', { q: S.idx, type: p.type, n: st.tries.length, timedOut: !!timedOut });
     paintCrackState(true);
@@ -2564,6 +2613,7 @@ const Engine = (() => {
     const st = S.g[S.idx];
     if (!st || st.done) return;
     st.done = true;
+    pingGem = S.idx;
     stopTimer();
     saveRead(false);
     paintCrackState(true);
@@ -2610,11 +2660,29 @@ const Engine = (() => {
     renderResult();
   }
 
+  /* ---------- Count-up ---------- */
+  const reduceMotion = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+  // Animates a number in `node` from `from` to `to`; `label(n)` renders the text, `tail` is an optional trailing element.
+  function countUp(node, from, to, label, tail, ms) {
+    const paint = n => { node.replaceChildren(document.createTextNode(label(n))); if (tail) node.append(tail); };
+    if (reduceMotion() || from === to) { paint(to); return; }
+    const dur = ms || Math.min(900, 350 + Math.abs(to - from) / 60);
+    const t0 = performance.now();
+    const tick = now => {
+      const x = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - x, 3);
+      paint(Math.round(from + (to - from) * e));
+      if (x < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
   /* ---------- Reveals ---------- */
-  function paintAnswer(node, an, hitAt, reveal) {
+  function paintAnswer(node, an, hitAt, reveal, newTry) {
     node.replaceChildren();
     const text = an.text;
     let pos = 0;
+    let k = 0;
     for (const sg of an.segs) {
       if (sg.s < pos) continue;
       if (sg.s > pos) node.append(text.slice(pos, sg.s));
@@ -2622,7 +2690,11 @@ const Engine = (() => {
       if (sg.ci < 0) node.append(el('span', 'filler', word));
       else {
         const h = hitAt[sg.ci];
-        if (h) node.append(el('span', `w ${h.school}${h.crit ? ' crit' : ''}${h.t ? ' late' : ''}`, word));
+        if (h) {
+          const w = el('span', `w ${h.school}${h.crit ? ' crit' : ''}${h.t ? ' late' : ''}`, word);
+          if (newTry != null && h.t === newTry) { w.classList.add('new'); w.style.setProperty('--d', `${k++ * 90}ms`); }
+          node.append(w);
+        }
         else if (reveal) node.append(el('span', 'w missed', word));
         else {
           const n = (word.match(/[\p{L}\p{N}]/gu) || []).length || word.length;
@@ -2681,7 +2753,10 @@ const Engine = (() => {
     const past = LINK.day < today();
     $('rvWho').textContent = p.type === 'open' ? `${name}’s answer` : st.done ? 'You scored' : 'Not yet';
     const score = $('rvScore');
-    score.replaceChildren(document.createTextNode((r.points > 0 ? '+' : '') + fmt(r.points) + ' '), el('span', 'of', `/ ${fmt(r.max)}`));
+    const prevPts = score.dataset.idx === String(S.idx) ? +score.dataset.pts || 0 : 0;
+    score.dataset.idx = String(S.idx);
+    score.dataset.pts = String(r.points);
+    countUp(score, prevPts, r.points, n => (n > 0 ? '+' : '') + fmt(n) + ' ', el('span', 'of', `/ ${fmt(r.max)}`));
     const body = $('rvBody');
     body.replaceChildren();
     const tags = [];
@@ -2701,7 +2776,7 @@ const Engine = (() => {
 
     if (p.type === 'open') {
       const ans = el('p', 'redacted');
-      paintAnswer(ans, AN[S.idx], r.open.hitAt, st.done && past);
+      paintAnswer(ans, AN[S.idx], r.open.hitAt, st.done && past, st.tries.length - 1);
       body.append(ans);
       if (r.open.perfect) tags.push(el('span', 'tag perfect', 'Perfect read'));
       if (AN[S.idx].foreign) tags.push(el('span', 'tag lang', 'Not English: plain hits only'));
@@ -2858,6 +2933,7 @@ const Engine = (() => {
       const r = evalQ(i);
       if (r.points > 0) g.dataset.q = E.tierFor(r.points, r.max).key;
       else g.classList.add('zero');
+      g.style.setProperty('--i', i);
       gems.append(g);
     }
     const gemWrap = el('span');
@@ -2898,7 +2974,9 @@ const Engine = (() => {
     $('v-result').style.setProperty('--rarity', `var(--q-${t.key})`);
     $('resultEyebrow').textContent = `Soulbound #${LINK.day} · ${t.name}`;
     $('resultTitle').textContent = total >= E.MAX_POINTS * 0.4 ? `You know ${LINK.name}` : total > 0 ? `You sort of know ${LINK.name}` : `Do you even know ${LINK.name}?`;
-    $('resultPoints').textContent = fmt(total);
+    const big = $('resultBig');
+    big.classList.remove('count'); void big.offsetWidth; big.classList.add('count');
+    countUp($('resultPoints'), 0, total, n => fmt(n), null, 1100);
     const card = $('resultCard');
     const bond = renderBond(preview);
     buildTooltip(card, t, crackerName(), LINK.name, total, bond);
