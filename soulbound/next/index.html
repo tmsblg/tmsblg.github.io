@@ -2074,6 +2074,7 @@ const Engine = (() => {
   let LINK = null;     // decoded open link
   let AN = [];         // analysed open answers (null for other types)
   let multiSel = 0;    // current pick-a-few selection
+  let tapSel = null;   // current scale / yes-no / pick-one selection, until Next or Guess
 
   function inFrame() {
     try { return window.self !== window.top; } catch (e) { return true; }
@@ -2236,6 +2237,7 @@ const Engine = (() => {
     box.replaceChildren();
     $('pCounter').textContent = '';
     multiSel = 0;
+    tapSel = (p.type === 'scale' || p.type === 'yesno' || p.type === 'choice') && value != null ? value : null;
     const mkBtn = (cls, label, v) => {
       const b = el('button', cls, label);
       b.type = 'button';
@@ -2315,9 +2317,7 @@ const Engine = (() => {
       box.append(grid);
       setHint(`Pick up to ${p.pick}`);
     }
-    // Typed answers submit with the main button; tap answers submit on tap.
-    const typed = p.type === 'open' || p.type === 'number' || p.type === 'multi';
-    $('pNext').hidden = !typed && S.mode !== 'lock';
+    $('pNext').hidden = false;
     if (locked) box.querySelectorAll('button, input').forEach(n => { n.disabled = true; });
   }
   function updateOpenHint() {
@@ -2339,7 +2339,7 @@ const Engine = (() => {
       return /^\d+$/.test(t) ? parseInt(t, 10) : null;
     }
     if (p.type === 'multi') return multiSel || null;
-    return null;
+    return tapSel;
   }
   function problemFor(p) {
     if (p.type === 'open') return 'Write something. Gut answers score best.';
@@ -2405,9 +2405,9 @@ const Engine = (() => {
   function lockRule(p) {
     if (p.type === 'open') return 'Friends get three tries to guess your words.';
     if (p.type === 'number') return 'A whole number. Friends score for getting close.';
-    if (p.type === 'scale') return 'Tap one. Friends score for exact, half for one off.';
+    if (p.type === 'scale') return 'Tap one, then Next. Friends score for exact, half for one off.';
     if (p.type === 'multi') return `Pick up to ${p.pick}. Friends score for every match.`;
-    return 'Tap your answer.';
+    return 'Tap your answer, then Next.';
   }
   function crackRule(p, st) {
     const n = st.tries.length;
@@ -2419,7 +2419,7 @@ const Engine = (() => {
     if (p.type === 'scale') return `Exact is full points, one off is half.`;
     if (p.type === 'choice') return n ? (st.tries[n - 1] == null ? 'Out of time. One more try for 40%.' : 'Not that one. One more try for 40%.') : 'Two tries. The second earns 40%.';
     if (p.type === 'multi') return `Pick up to ${p.pick}. Points for every match.`;
-    return 'Quick one.';
+    return 'Tap your guess, then Guess.';
   }
   function focusControl() {
     // Typed answers get the cursor; tap answers focus the question, so no option looks pre-picked.
@@ -2445,11 +2445,12 @@ const Engine = (() => {
   function pickValue(v) {
     const p = setOf(S.day, S.ver)[S.idx];
     if (S.view !== 'prompt') return;
-    if (S.mode === 'lock') {
-      S.answers[S.idx] = v;
-      $('pControls').querySelectorAll('button[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(v))));
-      setTimeout(() => { if (S.view === 'prompt' && S.mode === 'lock' && setOf(S.day, S.ver)[S.idx] === p) advanceLock(); }, 220);
-    } else crackTry(v, false);
+    // Taps only select; Next / Guess submits, so a mis-tap can be changed.
+    tapSel = v;
+    if (S.mode === 'lock') S.answers[S.idx] = v;
+    $('pControls').querySelectorAll('button[data-v]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(v))));
+    setHint('');
+    void p;
   }
   function submitLock() {
     const p = setOf(S.day, S.ver)[S.idx];
